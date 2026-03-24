@@ -1,4 +1,4 @@
-﻿*.iml
+*.iml
 .gradle
 .gradle-user
 .kotlin/
@@ -10,3 +10,6 @@ captures/
 .cxx/
 build/
 **/build/
+release-apk/
+*.jks
+*.keystore
