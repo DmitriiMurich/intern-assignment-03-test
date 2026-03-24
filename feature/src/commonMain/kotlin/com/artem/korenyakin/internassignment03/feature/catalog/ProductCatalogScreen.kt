@@ -3,6 +3,9 @@ package com.artem.korenyakin.internassignment03.feature.catalog
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,8 +39,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.artem.korenyakin.internassignment03.feature.catalog.components.ProductCard
 import com.artem.korenyakin.internassignment03.feature.catalog.components.SearchBar
@@ -84,6 +92,7 @@ internal fun ProductCatalogContent(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(
         listState,
@@ -119,7 +128,17 @@ internal fun ProductCatalogContent(
                         MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.18f),
                     ),
                 ),
-            ),
+            )
+            .pointerInput(focusManager) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(pass = PointerEventPass.Final)
+                    val up = waitForUpOrCancellation(pass = PointerEventPass.Final)
+
+                    if (up != null && !down.isConsumed && !up.isConsumed) {
+                        focusManager.clearFocus()
+                    }
+                }
+            },
     ) {
         when {
             state.isLoading -> {
@@ -276,6 +295,8 @@ private fun ControlsSection(
     onCategorySelected: (ProductCategory) -> Unit,
     onSortOptionSelected: (SortOption) -> Unit,
 ) {
+    val focusManager = LocalFocusManager.current
+
     Surface(
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -300,6 +321,7 @@ private fun ControlsSection(
                 options = state.categories,
                 optionTitle = { category -> category.title },
                 onSelected = onCategorySelected,
+                onExpanded = { focusManager.clearFocus() },
             )
             CatalogDropdown(
                 title = "Sort by",
@@ -307,6 +329,7 @@ private fun ControlsSection(
                 options = SortOption.entries.toList(),
                 optionTitle = { sortOption -> sortOption.title },
                 onSelected = onSortOptionSelected,
+                onExpanded = { focusManager.clearFocus() },
             )
         }
     }
@@ -319,6 +342,7 @@ private fun <T> CatalogDropdown(
     options: List<T>,
     optionTitle: (T) -> String,
     onSelected: (T) -> Unit,
+    onExpanded: () -> Unit,
 ) {
     var expanded by remember {
         mutableStateOf(false)
@@ -348,6 +372,7 @@ private fun <T> CatalogDropdown(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
+                            onExpanded()
                             expanded = true
                         }
                         .padding(horizontal = 16.dp, vertical = 16.dp),
@@ -382,6 +407,8 @@ private fun <T> CatalogDropdown(
                 onDismissRequest = {
                     expanded = false
                 },
+                modifier = Modifier.heightIn(max = 320.dp),
+                offset = DpOffset(x = 0.dp, y = 8.dp),
             ) {
                 options.forEach { option ->
                     DropdownMenuItem(
