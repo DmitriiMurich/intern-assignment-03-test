@@ -2,30 +2,22 @@ package com.artem.korenyakin.internassignment03.feature.catalog
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,9 +26,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,12 +34,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.artem.korenyakin.internassignment03.feature.catalog.components.CatalogFeedbackCard
+import com.artem.korenyakin.internassignment03.feature.catalog.components.ControlsSection
+import com.artem.korenyakin.internassignment03.feature.catalog.components.HeroSection
 import com.artem.korenyakin.internassignment03.feature.catalog.components.ProductCard
-import com.artem.korenyakin.internassignment03.feature.catalog.components.SearchBar
+import com.artem.korenyakin.internassignment03.feature.catalog.components.ResultsSummary
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -59,6 +50,7 @@ import org.koin.core.context.GlobalContext
 
 @Composable
 fun ProductCatalogScreen(
+    strings: CatalogStrings,
     modifier: Modifier = Modifier,
 ) {
     val viewModel = remember {
@@ -74,6 +66,7 @@ fun ProductCatalogScreen(
 
     ProductCatalogContent(
         state = state,
+        strings = strings,
         onSearchQueryChanged = viewModel::onSearchQueryChanged,
         onCategorySelected = viewModel::onCategorySelected,
         onSortOptionSelected = viewModel::onSortOptionSelected,
@@ -84,9 +77,11 @@ fun ProductCatalogScreen(
     )
 }
 
+@Suppress("LongMethod", "CyclomaticComplexMethod")
 @Composable
 internal fun ProductCatalogContent(
     state: ProductCatalogState,
+    strings: CatalogStrings,
     onSearchQueryChanged: (String) -> Unit,
     onCategorySelected: (ProductCategory) -> Unit,
     onSortOptionSelected: (SortOption) -> Unit,
@@ -113,7 +108,7 @@ internal fun ProductCatalogContent(
         }
             .map { lastVisibleIndex ->
                 lastVisibleIndex?.let { index ->
-                    index >= state.visibleProducts.lastIndex - LOAD_MORE_THRESHOLD
+                    index >= state.visibleProducts.lastIndex - LoadMoreThreshold
                 }
             }
             .filterNotNull()
@@ -150,8 +145,8 @@ internal fun ProductCatalogContent(
     ) {
         if (state.isLoading && !hasLoadedContent) {
             ScreenStatus(
-                title = "Loading catalog",
-                subtitle = "Fetching products and categories from the API",
+                title = strings.loadingCatalogTitle,
+                subtitle = strings.loadingCatalogSubtitle,
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
@@ -174,11 +169,19 @@ internal fun ProductCatalogContent(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 item(key = "hero") {
-                    HeroSection(state = state)
+                    HeroSection(
+                        label = strings.heroLabel,
+                        title = strings.heroTitle,
+                        subtitle = heroSubtitle(
+                            state = state,
+                            strings = strings,
+                        ),
+                    )
                 }
                 item(key = "controls") {
                     ControlsSection(
                         state = state,
+                        strings = strings,
                         onSearchQueryChanged = onSearchQueryChanged,
                         onCategorySelected = onCategorySelected,
                         onSortOptionSelected = onSortOptionSelected,
@@ -189,10 +192,13 @@ internal fun ProductCatalogContent(
                     state.errorMessage != null && !hasLoadedContent -> {
                         item(key = "error-state") {
                             CatalogFeedbackCard(
-                                label = "REQUEST FAILED",
-                                title = "Could not load the catalog",
-                                subtitle = state.errorMessage,
-                                actionLabel = "Retry",
+                                label = strings.requestFailedLabel,
+                                title = strings.requestFailedTitle,
+                                subtitle = errorSubtitle(
+                                    errorMessage = state.errorMessage,
+                                    strings = strings,
+                                ),
+                                actionLabel = strings.retry,
                                 onAction = onRetry,
                             )
                         }
@@ -201,14 +207,18 @@ internal fun ProductCatalogContent(
                     state.visibleProducts.isEmpty() -> {
                         item(key = "empty-state") {
                             CatalogFeedbackCard(
-                                label = "NO RESULTS",
-                                title = "Nothing found",
+                                label = strings.noResultsLabel,
+                                title = strings.noResultsTitle,
                                 subtitle = if (hasActiveFilters) {
-                                    "Try another query or reset the filters."
+                                    strings.noResultsFilteredSubtitle
                                 } else {
-                                    "No products are available right now."
+                                    strings.noResultsSubtitle
                                 },
-                                actionLabel = if (hasActiveFilters) "Reset filters" else null,
+                                actionLabel = if (hasActiveFilters) {
+                                    strings.resetFilters
+                                } else {
+                                    null
+                                },
                                 onAction = if (hasActiveFilters) onResetFilters else null,
                             )
                         }
@@ -217,8 +227,11 @@ internal fun ProductCatalogContent(
                     else -> {
                         item(key = "results-summary") {
                             ResultsSummary(
-                                visibleCount = state.visibleProducts.size,
-                                totalCount = state.filteredProducts.size,
+                                title = strings.results,
+                                summary = strings.formatResultsSummary(
+                                    visibleCount = state.visibleProducts.size,
+                                    totalCount = state.filteredProducts.size,
+                                ),
                             )
                         }
                         items(
@@ -227,6 +240,7 @@ internal fun ProductCatalogContent(
                         ) { product ->
                             ProductCard(
                                 product = product,
+                                strings = strings,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
@@ -241,372 +255,6 @@ internal fun ProductCatalogContent(
                                     CircularProgressIndicator()
                                 }
                             }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HeroSection(
-    state: ProductCatalogState,
-) {
-    Surface(
-        shape = RoundedCornerShape(30.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 10.dp,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
-        ),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer,
-                            MaterialTheme.colorScheme.secondaryContainer,
-                        ),
-                    ),
-                )
-                .padding(20.dp),
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = "PRODUCT CATALOG",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = "Deals, picks and fast filters",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = heroSubtitle(state = state),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ControlsSection(
-    state: ProductCatalogState,
-    onSearchQueryChanged: (String) -> Unit,
-    onCategorySelected: (ProductCategory) -> Unit,
-    onSortOptionSelected: (SortOption) -> Unit,
-) {
-    val focusManager = LocalFocusManager.current
-
-    Surface(
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 8.dp,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
-        ),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            SearchBar(
-                query = state.searchQuery,
-                onQueryChanged = onSearchQueryChanged,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            CategoryChipsSection(
-                categories = state.categories,
-                selectedCategory = state.selectedCategory,
-                onCategorySelected = { category ->
-                    focusManager.clearFocus()
-                    onCategorySelected(category)
-                },
-            )
-            CatalogDropdown(
-                title = "Sort by",
-                selectedTitle = state.selectedSortOption.title,
-                options = SortOption.entries.toList(),
-                optionTitle = { sortOption -> sortOption.title },
-                onSelected = onSortOptionSelected,
-                onExpanded = { focusManager.clearFocus() },
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun CategoryChipsSection(
-    categories: List<ProductCategory>,
-    selectedCategory: ProductCategory,
-    onCategorySelected: (ProductCategory) -> Unit,
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(
-            text = "Category",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            categories.forEach { category ->
-                CategoryChip(
-                    title = category.title,
-                    isSelected = category == selectedCategory,
-                    onClick = { onCategorySelected(category) },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CategoryChip(
-    title: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    Surface(
-        shape = RoundedCornerShape(999.dp),
-        color = if (isSelected) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant
-        },
-        border = BorderStroke(
-            width = 1.dp,
-            color = if (isSelected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.outline
-            },
-        ),
-        modifier = Modifier.clickable(onClick = onClick),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelLarge,
-            color = if (isSelected) {
-                MaterialTheme.colorScheme.onPrimary
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            },
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-        )
-    }
-}
-
-@Composable
-private fun <T> CatalogDropdown(
-    title: String,
-    selectedTitle: String,
-    options: List<T>,
-    optionTitle: (T) -> String,
-    onSelected: (T) -> Unit,
-    onExpanded: () -> Unit,
-) {
-    var expanded by remember {
-        mutableStateOf(false)
-    }
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(22.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outline,
-                ),
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onExpanded()
-                            expanded = true
-                        }
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        Text(
-                            text = title.uppercase(),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = selectedTitle,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-                    Text(
-                        text = "v",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = {
-                    expanded = false
-                },
-                modifier = Modifier.heightIn(max = 320.dp),
-                offset = DpOffset(x = 0.dp, y = 8.dp),
-            ) {
-                options.forEach { option ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(text = optionTitle(option))
-                        },
-                        onClick = {
-                            onSelected(option)
-                            expanded = false
-                        },
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ResultsSummary(
-    visibleCount: Int,
-    totalCount: Int,
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "Results",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Surface(
-            shape = RoundedCornerShape(999.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
-            ),
-        ) {
-            Text(
-                text = "$visibleCount of $totalCount",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun CatalogFeedbackCard(
-    label: String,
-    title: String,
-    subtitle: String,
-    actionLabel: String? = null,
-    onAction: (() -> Unit)? = null,
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(30.dp),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 8.dp,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
-        ),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.52f),
-                            MaterialTheme.colorScheme.surface,
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.42f),
-                        ),
-                    ),
-                )
-                .padding(20.dp),
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(999.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.65f),
-                    ),
-                ) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                    )
-                }
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (actionLabel != null && onAction != null) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Button(onClick = onAction) {
-                            Text(text = actionLabel)
                         }
                     }
                 }
@@ -668,12 +316,26 @@ private fun ScreenStatus(
 
 private fun heroSubtitle(
     state: ProductCatalogState,
+    strings: CatalogStrings,
 ): String = when {
-    state.isLoading -> "Loading fresh items."
-    state.errorMessage != null && state.products.isEmpty() -> "There was a problem loading products from the API."
-    state.filteredProducts.isEmpty() && state.products.isNotEmpty() -> "Adjust the query or filters to find matching items."
-    state.filteredProducts.isEmpty() -> "No items are available right now."
-    else -> "Showing ${state.visibleProducts.size} of ${state.filteredProducts.size} items."
+    state.isLoading -> strings.heroLoadingSubtitle
+    state.errorMessage != null && state.products.isEmpty() -> strings.heroErrorSubtitle
+    state.filteredProducts.isEmpty() && state.products.isNotEmpty() -> strings.heroEmptyFilteredSubtitle
+    state.filteredProducts.isEmpty() -> strings.heroEmptySubtitle
+    else -> strings.formatHeroResultsSubtitle(
+        visibleCount = state.visibleProducts.size,
+        totalCount = state.filteredProducts.size,
+    )
 }
 
-private const val LOAD_MORE_THRESHOLD: Int = 2
+private fun errorSubtitle(
+    errorMessage: String?,
+    strings: CatalogStrings,
+): String = when (errorMessage) {
+    null,
+    GenericLoadErrorToken,
+    -> strings.genericLoadError
+    else -> errorMessage
+}
+
+private const val LoadMoreThreshold: Int = 2

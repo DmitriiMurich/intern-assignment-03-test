@@ -1,4 +1,4 @@
-package com.artem.korenyakin.internassignment03.feature.catalog
+﻿package com.artem.korenyakin.internassignment03.feature.catalog
 
 import com.artem.korenyakin.internassignment03.feature.catalog.domain.SearchProductsUseCase
 import com.artem.korenyakin.internassignment03.model.domain.Product
@@ -42,46 +42,38 @@ internal class ProductCatalogViewModel(
 
     internal fun onSearchQueryChanged(query: String) {
         searchQueryFlow.value = query
-        loadedPagesFlow.value = 1
-        _state.update { currentState ->
-            currentState.copy(
-                searchQuery = query,
-            )
-        }
+        resetPagination()
+        updateFilterState(
+            searchQuery = query,
+        )
     }
 
     internal fun onCategorySelected(category: ProductCategory) {
         selectedCategoryFlow.value = category
-        loadedPagesFlow.value = 1
-        _state.update { currentState ->
-            currentState.copy(
-                selectedCategory = category,
-            )
-        }
+        resetPagination()
+        updateFilterState(
+            selectedCategory = category,
+        )
     }
 
     internal fun onSortOptionSelected(sortOption: SortOption) {
         selectedSortOptionFlow.value = sortOption
-        loadedPagesFlow.value = 1
-        _state.update { currentState ->
-            currentState.copy(
-                selectedSortOption = sortOption,
-            )
-        }
+        resetPagination()
+        updateFilterState(
+            selectedSortOption = sortOption,
+        )
     }
 
     internal fun resetFilters() {
         searchQueryFlow.value = ""
         selectedCategoryFlow.value = ProductCategory.ALL
         selectedSortOptionFlow.value = SortOption.PRICE_ASC
-        loadedPagesFlow.value = 1
-        _state.update { currentState ->
-            currentState.copy(
-                searchQuery = "",
-                selectedCategory = ProductCategory.ALL,
-                selectedSortOption = SortOption.PRICE_ASC,
-            )
-        }
+        resetPagination()
+        updateFilterState(
+            searchQuery = "",
+            selectedCategory = ProductCategory.ALL,
+            selectedSortOption = SortOption.PRICE_ASC,
+        )
     }
 
     internal fun loadMore() {
@@ -99,7 +91,7 @@ internal class ProductCatalogViewModel(
     }
 
     internal fun retryLoad() {
-        loadedPagesFlow.value = 1
+        resetPagination()
         loadCatalog()
     }
 
@@ -135,85 +127,76 @@ internal class ProductCatalogViewModel(
                     selectedSortOption = selectedSortOption,
                     loadedPages = loadedPages,
                 )
-            }.collect { derivedCatalog ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        categories = derivedCatalog.categories,
-                        products = derivedCatalog.products,
-                        filteredProducts = derivedCatalog.filteredProducts,
-                        visibleProducts = derivedCatalog.visibleProducts,
-                        canLoadMore = derivedCatalog.canLoadMore,
-                        isLoadingMore = false,
-                    )
-                }
-            }
+            }.collect(::applyDerivedCatalog)
         }
     }
 
     private fun loadCatalog() {
         scope.launch {
-            _state.update { currentState ->
-                currentState.copy(
-                    isLoading = true,
-                    isLoadingMore = false,
-                    errorMessage = null,
-                )
-            }
+            showLoadingState()
 
             runCatching {
-                val products = productRepository.getProducts(
-                    page = 0,
-                    pageSize = REMOTE_PAGE_SIZE,
-                )
-                val categories = productRepository.getCategories()
+                requestCatalog()
+            }.onSuccess(::handleLoadSuccess)
+                .onFailure(::handleLoadFailure)
+        }
+    }
 
-                LoadedCatalog(
-                    products = products,
-                    categories = categories,
-                )
-            }.onSuccess { loadedCatalog ->
-                val categories = loadedCatalog.categories.ifEmpty {
-                    listOf(ProductCategory.ALL)
-                }
-                val initialCatalog = deriveCatalog(
-                    products = loadedCatalog.products,
-                    categories = categories,
-                    query = searchQueryFlow.value,
-                    selectedCategory = selectedCategoryFlow.value,
-                    selectedSortOption = selectedSortOptionFlow.value,
-                    loadedPages = loadedPagesFlow.value,
-                )
+    private suspend fun requestCatalog(): LoadedCatalog {
+        val products = productRepository.getProducts(
+            page = 0,
+            pageSize = REMOTE_PAGE_SIZE,
+        )
+        val categories = productRepository.getCategories()
 
-                categoriesFlow.value = categories
-                allProductsFlow.value = loadedCatalog.products
-                _state.update { currentState ->
-                    currentState.copy(
-                        categories = initialCatalog.categories,
-                        products = initialCatalog.products,
-                        filteredProducts = initialCatalog.filteredProducts,
-                        visibleProducts = initialCatalog.visibleProducts,
-                        canLoadMore = initialCatalog.canLoadMore,
-                        isLoading = false,
-                        isLoadingMore = false,
-                        errorMessage = null,
-                    )
-                }
-            }.onFailure { throwable ->
-                categoriesFlow.value = listOf(ProductCategory.ALL)
-                allProductsFlow.value = emptyList()
-                _state.update { currentState ->
-                    currentState.copy(
-                        categories = listOf(ProductCategory.ALL),
-                        products = emptyList(),
-                        filteredProducts = emptyList(),
-                        visibleProducts = emptyList(),
-                        isLoading = false,
-                        isLoadingMore = false,
-                        canLoadMore = false,
-                        errorMessage = throwable.message ?: DEFAULT_ERROR_MESSAGE,
-                    )
-                }
-            }
+        return LoadedCatalog(
+            products = products,
+            categories = categories,
+        )
+    }
+
+    private fun handleLoadSuccess(loadedCatalog: LoadedCatalog) {
+        val categories = loadedCatalog.categories.orDefault()
+        val initialCatalog = deriveCatalog(
+            products = loadedCatalog.products,
+            categories = categories,
+            query = searchQueryFlow.value,
+            selectedCategory = selectedCategoryFlow.value,
+            selectedSortOption = selectedSortOptionFlow.value,
+            loadedPages = loadedPagesFlow.value,
+        )
+
+        categoriesFlow.value = categories
+        allProductsFlow.value = loadedCatalog.products
+        _state.update { currentState ->
+            currentState.copy(
+                categories = initialCatalog.categories,
+                products = initialCatalog.products,
+                filteredProducts = initialCatalog.filteredProducts,
+                visibleProducts = initialCatalog.visibleProducts,
+                canLoadMore = initialCatalog.canLoadMore,
+                isLoading = false,
+                isLoadingMore = false,
+                errorMessage = null,
+            )
+        }
+    }
+
+    private fun handleLoadFailure(throwable: Throwable) {
+        val categories = listOf(ProductCategory.ALL)
+        categoriesFlow.value = categories
+        allProductsFlow.value = emptyList()
+        _state.update { currentState ->
+            currentState.copy(
+                categories = categories,
+                products = emptyList(),
+                filteredProducts = emptyList(),
+                visibleProducts = emptyList(),
+                isLoading = false,
+                isLoadingMore = false,
+                canLoadMore = false,
+                errorMessage = throwable.message ?: GenericLoadErrorToken,
+            )
         }
     }
 
@@ -242,6 +225,53 @@ internal class ProductCatalogViewModel(
         )
     }
 
+    private fun resetPagination() {
+        loadedPagesFlow.value = 1
+    }
+
+    private fun updateFilterState(
+        searchQuery: String = searchQueryFlow.value,
+        selectedCategory: ProductCategory = selectedCategoryFlow.value,
+        selectedSortOption: SortOption = selectedSortOptionFlow.value,
+    ) {
+        _state.update { currentState ->
+            currentState.copy(
+                searchQuery = searchQuery,
+                selectedCategory = selectedCategory,
+                selectedSortOption = selectedSortOption,
+            )
+        }
+    }
+
+    private fun applyDerivedCatalog(derivedCatalog: DerivedCatalog) {
+        _state.update { currentState ->
+            currentState.copy(
+                categories = derivedCatalog.categories,
+                products = derivedCatalog.products,
+                filteredProducts = derivedCatalog.filteredProducts,
+                visibleProducts = derivedCatalog.visibleProducts,
+                canLoadMore = derivedCatalog.canLoadMore,
+                isLoadingMore = false,
+            )
+        }
+    }
+
+    private fun showLoadingState() {
+        _state.update { currentState ->
+            currentState.copy(
+                isLoading = true,
+                isLoadingMore = false,
+                errorMessage = null,
+            )
+        }
+    }
+
+    private fun List<ProductCategory>.orDefault(): List<ProductCategory> {
+        return ifEmpty {
+            listOf(ProductCategory.ALL)
+        }
+    }
+
     private data class CatalogSource(
         val products: List<Product>,
         val categories: List<ProductCategory>,
@@ -264,6 +294,7 @@ internal class ProductCatalogViewModel(
         private const val SEARCH_DEBOUNCE_MS: Long = 300L
         private const val REMOTE_PAGE_SIZE: Int = 200
         private const val VISIBLE_PAGE_SIZE: Int = 20
-        private const val DEFAULT_ERROR_MESSAGE: String = "Could not load the catalog"
     }
 }
+
+internal const val GenericLoadErrorToken: String = "__catalog_load_error__"
