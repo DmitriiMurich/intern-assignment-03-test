@@ -10,7 +10,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -67,6 +66,20 @@ internal class ProductCatalogViewModel(
         _state.update { currentState ->
             currentState.copy(
                 selectedSortOption = sortOption,
+            )
+        }
+    }
+
+    internal fun resetFilters() {
+        searchQueryFlow.value = ""
+        selectedCategoryFlow.value = ProductCategory.ALL
+        selectedSortOptionFlow.value = SortOption.PRICE_ASC
+        loadedPagesFlow.value = 1
+        _state.update { currentState ->
+            currentState.copy(
+                searchQuery = "",
+                selectedCategory = ProductCategory.ALL,
+                selectedSortOption = SortOption.PRICE_ASC,
             )
         }
     }
@@ -148,17 +161,15 @@ internal class ProductCatalogViewModel(
             }
 
             runCatching {
-                val categoriesDeferred = async {
-                    productRepository.getCategories()
-                }
                 val products = productRepository.getProducts(
                     page = 0,
                     pageSize = REMOTE_PAGE_SIZE,
                 )
+                val categories = productRepository.getCategories()
 
                 LoadedCatalog(
                     products = products,
-                    categories = categoriesDeferred.await(),
+                    categories = categories,
                 )
             }.onSuccess { loadedCatalog ->
                 val categories = loadedCatalog.categories.ifEmpty {

@@ -77,6 +77,7 @@ fun ProductCatalogScreen(
         onSortOptionSelected = viewModel::onSortOptionSelected,
         onLoadMore = viewModel::loadMore,
         onRetry = viewModel::retryLoad,
+        onResetFilters = viewModel::resetFilters,
         modifier = modifier,
     )
 }
@@ -89,10 +90,15 @@ internal fun ProductCatalogContent(
     onSortOptionSelected: (SortOption) -> Unit,
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
+    onResetFilters: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
+    val hasLoadedContent = state.products.isNotEmpty()
+    val hasActiveFilters = state.searchQuery.isNotBlank() ||
+        state.selectedCategory != ProductCategory.ALL ||
+        state.selectedSortOption != SortOption.PRICE_ASC
 
     LaunchedEffect(
         listState,
@@ -140,95 +146,98 @@ internal fun ProductCatalogContent(
                 }
             },
     ) {
-        when {
-            state.isLoading -> {
-                ScreenStatus(
-                    title = "Loading catalog",
-                    subtitle = "Fetching products and categories from the API",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .padding(16.dp),
-                ) {
-                    CircularProgressIndicator()
+        if (state.isLoading && !hasLoadedContent) {
+            ScreenStatus(
+                title = "Loading catalog",
+                subtitle = "Fetching products and categories from the API",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(16.dp),
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    top = 16.dp,
+                    end = 16.dp,
+                    bottom = 28.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                item(key = "hero") {
+                    HeroSection(state = state)
                 }
-            }
-
-            state.errorMessage != null && state.visibleProducts.isEmpty() -> {
-                ScreenStatus(
-                    title = "Could not load the catalog",
-                    subtitle = state.errorMessage,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .padding(16.dp),
-                ) {
-                    Button(onClick = onRetry) {
-                        Text(text = "Try again")
-                    }
+                item(key = "controls") {
+                    ControlsSection(
+                        state = state,
+                        onSearchQueryChanged = onSearchQueryChanged,
+                        onCategorySelected = onCategorySelected,
+                        onSortOptionSelected = onSortOptionSelected,
+                    )
                 }
-            }
 
-            state.visibleProducts.isEmpty() -> {
-                ScreenStatus(
-                    title = "Nothing found",
-                    subtitle = "Try a different search query or choose another category",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding()
-                        .padding(16.dp),
-                )
-            }
+                when {
+                    state.errorMessage != null && !hasLoadedContent -> {
+                        item(key = "error-state") {
+                            CatalogFeedbackCard(
+                                label = "REQUEST FAILED",
+                                title = "Could not load the catalog",
+                                subtitle = state.errorMessage,
+                                actionLabel = "Retry",
+                                onAction = onRetry,
+                            )
+                        }
+                    }
 
-            else -> {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding(),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        top = 16.dp,
-                        end = 16.dp,
-                        bottom = 28.dp,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    item(key = "hero") {
-                        HeroSection(state = state)
+                    state.visibleProducts.isEmpty() -> {
+                        item(key = "empty-state") {
+                            CatalogFeedbackCard(
+                                label = "NO RESULTS",
+                                title = "Nothing found",
+                                subtitle = if (hasActiveFilters) {
+                                    "Try another query or reset the filters."
+                                } else {
+                                    "No products are available right now."
+                                },
+                                actionLabel = if (hasActiveFilters) "Reset filters" else null,
+                                onAction = if (hasActiveFilters) onResetFilters else null,
+                            )
+                        }
                     }
-                    item(key = "controls") {
-                        ControlsSection(
-                            state = state,
-                            onSearchQueryChanged = onSearchQueryChanged,
-                            onCategorySelected = onCategorySelected,
-                            onSortOptionSelected = onSortOptionSelected,
-                        )
-                    }
-                    item(key = "results-summary") {
-                        ResultsSummary(
-                            visibleCount = state.visibleProducts.size,
-                            totalCount = state.filteredProducts.size,
-                        )
-                    }
-                    items(
-                        items = state.visibleProducts,
-                        key = { product -> product.id },
-                    ) { product ->
-                        ProductCard(
-                            product = product,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                    if (state.isLoadingMore) {
-                        item(key = "pagination-loader") {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
+
+                    else -> {
+                        item(key = "results-summary") {
+                            ResultsSummary(
+                                visibleCount = state.visibleProducts.size,
+                                totalCount = state.filteredProducts.size,
+                            )
+                        }
+                        items(
+                            items = state.visibleProducts,
+                            key = { product -> product.id },
+                        ) { product ->
+                            ProductCard(
+                                product = product,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        if (state.isLoadingMore) {
+                            item(key = "pagination-loader") {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    CircularProgressIndicator()
+                                }
                             }
                         }
                     }
@@ -461,6 +470,81 @@ private fun ResultsSummary(
 }
 
 @Composable
+private fun CatalogFeedbackCard(
+    label: String,
+    title: String,
+    subtitle: String,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(30.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 8.dp,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
+        ),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.52f),
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.42f),
+                        ),
+                    ),
+                )
+                .padding(20.dp),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(999.dp),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.65f),
+                    ),
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                    )
+                }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (actionLabel != null && onAction != null) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Button(onClick = onAction) {
+                            Text(text = actionLabel)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@Composable
 private fun ScreenStatus(
     title: String,
     subtitle: String,
@@ -515,8 +599,9 @@ private fun heroSubtitle(
     state: ProductCatalogState,
 ): String = when {
     state.isLoading -> "Loading fresh items."
-    state.errorMessage != null && state.visibleProducts.isEmpty() -> "The page is ready, but the API did not respond as expected."
+    state.errorMessage != null && state.products.isEmpty() -> "There was a problem loading products from the API."
+    state.filteredProducts.isEmpty() && state.products.isNotEmpty() -> "Adjust the query or filters to find matching items."
+    state.filteredProducts.isEmpty() -> "No items are available right now."
     else -> "Showing ${state.visibleProducts.size} of ${state.filteredProducts.size} items."
 }
-
 private const val LOAD_MORE_THRESHOLD: Int = 2
