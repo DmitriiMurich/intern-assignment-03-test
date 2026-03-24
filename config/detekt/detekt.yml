@@ -1,0 +1,28 @@
+config:
+  validation: true
+
+complexity:
+  LongParameterList:
+    active: true
+    ignoreDefaultParameters: true
+    allowedFunctionParameters: 8
+  TooManyFunctions:
+    active: true
+    ignorePrivate: true
+    ignoreInternal: true
+    allowedFunctionsPerFile: 15
+
+naming:
+  FunctionNaming:
+    active: true
+    ignoreAnnotated:
+      - Composable
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][A-Za-z0-9]*'
+
+style:
+  MagicNumber:
+    active: true
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true

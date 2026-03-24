@@ -6,7 +6,7 @@ import com.artem.korenyakin.internassignment03.feature.catalog.domain.SearchProd
 import com.artem.korenyakin.internassignment03.model.repository.ProductRepository
 import org.koin.dsl.module
 
-public val featureModule = module {
+val featureModule = module {
     single<ProductRepository> { DummyJsonProductRepository(get()) }
     factory { SearchProductsUseCase() }
     factory { ProductCatalogViewModel(get(), get()) }

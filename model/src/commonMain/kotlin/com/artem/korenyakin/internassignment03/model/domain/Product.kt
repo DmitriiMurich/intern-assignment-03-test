@@ -1,6 +1,6 @@
-﻿package com.artem.korenyakin.internassignment03.model.domain
+package com.artem.korenyakin.internassignment03.model.domain
 
-public data class Product(
+data class Product(
     val id: String,
     val title: String,
     val description: String,
