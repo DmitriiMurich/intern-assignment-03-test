@@ -77,8 +77,8 @@ internal class ProductCatalogViewModel(
             return
         }
 
-        _state.update { currentState ->
-            currentState.copy(
+        _state.update { updatedState ->
+            updatedState.copy(
                 isLoadingMore = true,
             )
         }
@@ -114,20 +114,13 @@ internal class ProductCatalogViewModel(
                 selectedSortOptionFlow,
                 loadedPagesFlow,
             ) { catalogSource, debouncedQuery, selectedCategory, selectedSortOption, loadedPages ->
-                val filteredProducts = searchProductsUseCase(
+                deriveCatalog(
                     products = catalogSource.products,
+                    categories = catalogSource.categories,
                     query = debouncedQuery,
                     selectedCategory = selectedCategory,
                     selectedSortOption = selectedSortOption,
-                )
-                val visibleCount = (loadedPages * VISIBLE_PAGE_SIZE).coerceAtMost(filteredProducts.size)
-
-                DerivedCatalog(
-                    categories = catalogSource.categories,
-                    products = catalogSource.products,
-                    filteredProducts = filteredProducts,
-                    visibleProducts = filteredProducts.take(visibleCount),
-                    canLoadMore = visibleCount < filteredProducts.size,
+                    loadedPages = loadedPages,
                 )
             }.collect { derivedCatalog ->
                 _state.update { currentState ->
@@ -168,13 +161,29 @@ internal class ProductCatalogViewModel(
                     categories = categoriesDeferred.await(),
                 )
             }.onSuccess { loadedCatalog ->
-                categoriesFlow.value = loadedCatalog.categories.ifEmpty {
+                val categories = loadedCatalog.categories.ifEmpty {
                     listOf(ProductCategory.ALL)
                 }
+                val initialCatalog = deriveCatalog(
+                    products = loadedCatalog.products,
+                    categories = categories,
+                    query = searchQueryFlow.value,
+                    selectedCategory = selectedCategoryFlow.value,
+                    selectedSortOption = selectedSortOptionFlow.value,
+                    loadedPages = loadedPagesFlow.value,
+                )
+
+                categoriesFlow.value = categories
                 allProductsFlow.value = loadedCatalog.products
                 _state.update { currentState ->
                     currentState.copy(
+                        categories = initialCatalog.categories,
+                        products = initialCatalog.products,
+                        filteredProducts = initialCatalog.filteredProducts,
+                        visibleProducts = initialCatalog.visibleProducts,
+                        canLoadMore = initialCatalog.canLoadMore,
                         isLoading = false,
+                        isLoadingMore = false,
                         errorMessage = null,
                     )
                 }
@@ -195,6 +204,31 @@ internal class ProductCatalogViewModel(
                 }
             }
         }
+    }
+
+    private fun deriveCatalog(
+        products: List<Product>,
+        categories: List<ProductCategory>,
+        query: String,
+        selectedCategory: ProductCategory,
+        selectedSortOption: SortOption,
+        loadedPages: Int,
+    ): DerivedCatalog {
+        val filteredProducts = searchProductsUseCase(
+            products = products,
+            query = query,
+            selectedCategory = selectedCategory,
+            selectedSortOption = selectedSortOption,
+        )
+        val visibleCount = (loadedPages * VISIBLE_PAGE_SIZE).coerceAtMost(filteredProducts.size)
+
+        return DerivedCatalog(
+            categories = categories,
+            products = products,
+            filteredProducts = filteredProducts,
+            visibleProducts = filteredProducts.take(visibleCount),
+            canLoadMore = visibleCount < filteredProducts.size,
+        )
     }
 
     private data class CatalogSource(
