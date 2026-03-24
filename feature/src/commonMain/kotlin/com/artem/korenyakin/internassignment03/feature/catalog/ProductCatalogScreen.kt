@@ -9,6 +9,8 @@ import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -317,20 +319,20 @@ private fun ControlsSection(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             SearchBar(
                 query = state.searchQuery,
                 onQueryChanged = onSearchQueryChanged,
                 modifier = Modifier.fillMaxWidth(),
             )
-            CatalogDropdown(
-                title = "Category",
-                selectedTitle = state.selectedCategory.title,
-                options = state.categories,
-                optionTitle = { category -> category.title },
-                onSelected = onCategorySelected,
-                onExpanded = { focusManager.clearFocus() },
+            CategoryChipsSection(
+                categories = state.categories,
+                selectedCategory = state.selectedCategory,
+                onCategorySelected = { category ->
+                    focusManager.clearFocus()
+                    onCategorySelected(category)
+                },
             )
             CatalogDropdown(
                 title = "Sort by",
@@ -341,6 +343,74 @@ private fun ControlsSection(
                 onExpanded = { focusManager.clearFocus() },
             )
         }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CategoryChipsSection(
+    categories: List<ProductCategory>,
+    selectedCategory: ProductCategory,
+    onCategorySelected: (ProductCategory) -> Unit,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = "Category",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            categories.forEach { category ->
+                CategoryChip(
+                    title = category.title,
+                    isSelected = category == selectedCategory,
+                    onClick = { onCategorySelected(category) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryChip(
+    title: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+) {
+    Surface(
+        shape = RoundedCornerShape(999.dp),
+        color = if (isSelected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        },
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (isSelected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outline
+            },
+        ),
+        modifier = Modifier.clickable(onClick = onClick),
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = if (isSelected) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+        )
     }
 }
 
@@ -544,6 +614,7 @@ private fun CatalogFeedbackCard(
         }
     }
 }
+
 @Composable
 private fun ScreenStatus(
     title: String,
@@ -604,4 +675,5 @@ private fun heroSubtitle(
     state.filteredProducts.isEmpty() -> "No items are available right now."
     else -> "Showing ${state.visibleProducts.size} of ${state.filteredProducts.size} items."
 }
+
 private const val LOAD_MORE_THRESHOLD: Int = 2
