@@ -228,7 +228,7 @@ intern-assignment-03/
 
 ## APK
 
-Ссылка на APK в `GitHub Releases` будет добавлена после публикации релиза.
+[Download APK](https://github.com/Bellou1337/intern-assignment-03/releases/download/v1.0.0/app-release.apk)
 
 ## Использованные ИИ-инструменты
 
