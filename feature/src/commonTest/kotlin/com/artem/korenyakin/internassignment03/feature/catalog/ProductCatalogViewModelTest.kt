@@ -300,7 +300,7 @@ internal class ProductCatalogViewModelTest {
     ) : FakeProductRepository(
         productsError = initialProductsError,
     ) {
-        override var productsError: Throwable? = initialProductsError
+        public override var productsError: Throwable? = initialProductsError
     }
 
     private companion object {
