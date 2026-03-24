@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun SearchBar(
     query: String,
+    label: String,
+    placeholder: String,
     onQueryChanged: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -20,10 +22,10 @@ internal fun SearchBar(
         onValueChange = onQueryChanged,
         modifier = modifier,
         label = {
-            Text(text = "Search")
+            Text(text = label)
         },
         placeholder = {
-            Text(text = "Try lemon or perfume")
+            Text(text = placeholder)
         },
         singleLine = true,
         shape = RoundedCornerShape(22.dp),

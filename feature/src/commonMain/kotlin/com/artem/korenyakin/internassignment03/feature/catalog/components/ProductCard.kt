@@ -26,12 +26,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.artem.korenyakin.internassignment03.feature.catalog.CatalogStrings
+import com.artem.korenyakin.internassignment03.feature.catalog.formatRatingValue
 import com.artem.korenyakin.internassignment03.model.domain.Product
 import kotlin.math.roundToInt
 
+@Suppress("LongMethod")
 @Composable
 internal fun ProductCard(
     product: Product,
+    strings: CatalogStrings,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -100,7 +104,9 @@ internal fun ProductCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         ProductPill(text = product.category.title)
-                        ProductPill(text = "Rating ${product.rating.toRatingText()}")
+                        ProductPill(
+                            text = strings.formatRatingValue(product.rating.toRatingText()),
+                        )
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -146,7 +152,7 @@ internal fun ProductCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = "Category",
+                    text = strings.category,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -167,10 +173,10 @@ private fun ProductPill(
 ) {
     Surface(
         shape = RoundedCornerShape(999.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = ProductPillSurfaceAlpha),
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.75f),
+            color = MaterialTheme.colorScheme.outline.copy(alpha = ProductPillBorderAlpha),
         ),
     ) {
         Text(
@@ -182,11 +188,17 @@ private fun ProductPill(
     }
 }
 
+private const val ProductPillSurfaceAlpha: Float = 0.94f
+private const val ProductPillBorderAlpha: Float = 0.75f
+private const val PriceFractionMultiplier: Double = 100.0
+private const val PriceTrimSuffixLength: Int = 2
+private const val RatingFractionMultiplier: Double = 10.0
+
 private fun Double.toPriceText(): String {
-    val roundedValue = ((this * 100).roundToInt() / 100.0)
+    val roundedValue = ((this * PriceFractionMultiplier).roundToInt() / PriceFractionMultiplier)
     val rawText = roundedValue.toString()
     val normalizedText = if (rawText.endsWith(".0")) {
-        rawText.dropLast(2)
+        rawText.dropLast(PriceTrimSuffixLength)
     } else {
         rawText
     }
@@ -195,6 +207,6 @@ private fun Double.toPriceText(): String {
 }
 
 private fun Double.toRatingText(): String {
-    val roundedValue = ((this * 10).roundToInt() / 10.0)
+    val roundedValue = ((this * RatingFractionMultiplier).roundToInt() / RatingFractionMultiplier)
     return roundedValue.toString()
 }
