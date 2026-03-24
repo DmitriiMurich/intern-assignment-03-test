@@ -41,16 +41,34 @@ import com.artem.korenyakin.internassignment03.feature.catalog.components.Contro
 import com.artem.korenyakin.internassignment03.feature.catalog.components.HeroSection
 import com.artem.korenyakin.internassignment03.feature.catalog.components.ProductCard
 import com.artem.korenyakin.internassignment03.feature.catalog.components.ResultsSummary
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.Res
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.hero_empty_filtered_subtitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.hero_empty_subtitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.hero_error_subtitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.hero_label
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.hero_loading_subtitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.hero_title
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.loading_catalog_subtitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.loading_catalog_title
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.no_results_filtered_subtitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.no_results_label
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.no_results_subtitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.no_results_title
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.request_failed_label
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.request_failed_title
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.reset_filters
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.results
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.retry
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import org.jetbrains.compose.resources.stringResource
 import org.koin.core.context.GlobalContext
 
 @Composable
 fun ProductCatalogScreen(
-    strings: CatalogStrings,
     modifier: Modifier = Modifier,
 ) {
     val viewModel = remember {
@@ -66,7 +84,6 @@ fun ProductCatalogScreen(
 
     ProductCatalogContent(
         state = state,
-        strings = strings,
         onSearchQueryChanged = viewModel::onSearchQueryChanged,
         onCategorySelected = viewModel::onCategorySelected,
         onSortOptionSelected = viewModel::onSortOptionSelected,
@@ -81,7 +98,6 @@ fun ProductCatalogScreen(
 @Composable
 internal fun ProductCatalogContent(
     state: ProductCatalogState,
-    strings: CatalogStrings,
     onSearchQueryChanged: (String) -> Unit,
     onCategorySelected: (ProductCategory) -> Unit,
     onSortOptionSelected: (SortOption) -> Unit,
@@ -145,8 +161,8 @@ internal fun ProductCatalogContent(
     ) {
         if (state.isLoading && !hasLoadedContent) {
             ScreenStatus(
-                title = strings.loadingCatalogTitle,
-                subtitle = strings.loadingCatalogSubtitle,
+                title = stringResource(Res.string.loading_catalog_title),
+                subtitle = stringResource(Res.string.loading_catalog_subtitle),
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
@@ -170,18 +186,14 @@ internal fun ProductCatalogContent(
             ) {
                 item(key = "hero") {
                     HeroSection(
-                        label = strings.heroLabel,
-                        title = strings.heroTitle,
-                        subtitle = heroSubtitle(
-                            state = state,
-                            strings = strings,
-                        ),
+                        label = stringResource(Res.string.hero_label),
+                        title = stringResource(Res.string.hero_title),
+                        subtitle = heroSubtitle(state = state),
                     )
                 }
                 item(key = "controls") {
                     ControlsSection(
                         state = state,
-                        strings = strings,
                         onSearchQueryChanged = onSearchQueryChanged,
                         onCategorySelected = onCategorySelected,
                         onSortOptionSelected = onSortOptionSelected,
@@ -192,13 +204,10 @@ internal fun ProductCatalogContent(
                     state.errorMessage != null && !hasLoadedContent -> {
                         item(key = "error-state") {
                             CatalogFeedbackCard(
-                                label = strings.requestFailedLabel,
-                                title = strings.requestFailedTitle,
-                                subtitle = errorSubtitle(
-                                    errorMessage = state.errorMessage,
-                                    strings = strings,
-                                ),
-                                actionLabel = strings.retry,
+                                label = stringResource(Res.string.request_failed_label),
+                                title = stringResource(Res.string.request_failed_title),
+                                subtitle = errorSubtitle(errorMessage = state.errorMessage),
+                                actionLabel = stringResource(Res.string.retry),
                                 onAction = onRetry,
                             )
                         }
@@ -207,15 +216,15 @@ internal fun ProductCatalogContent(
                     state.visibleProducts.isEmpty() -> {
                         item(key = "empty-state") {
                             CatalogFeedbackCard(
-                                label = strings.noResultsLabel,
-                                title = strings.noResultsTitle,
+                                label = stringResource(Res.string.no_results_label),
+                                title = stringResource(Res.string.no_results_title),
                                 subtitle = if (hasActiveFilters) {
-                                    strings.noResultsFilteredSubtitle
+                                    stringResource(Res.string.no_results_filtered_subtitle)
                                 } else {
-                                    strings.noResultsSubtitle
+                                    stringResource(Res.string.no_results_subtitle)
                                 },
                                 actionLabel = if (hasActiveFilters) {
-                                    strings.resetFilters
+                                    stringResource(Res.string.reset_filters)
                                 } else {
                                     null
                                 },
@@ -227,8 +236,8 @@ internal fun ProductCatalogContent(
                     else -> {
                         item(key = "results-summary") {
                             ResultsSummary(
-                                title = strings.results,
-                                summary = strings.formatResultsSummary(
+                                title = stringResource(Res.string.results),
+                                summary = formatResultsSummary(
                                     visibleCount = state.visibleProducts.size,
                                     totalCount = state.filteredProducts.size,
                                 ),
@@ -240,7 +249,6 @@ internal fun ProductCatalogContent(
                         ) { product ->
                             ProductCard(
                                 product = product,
-                                strings = strings,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
@@ -314,27 +322,29 @@ private fun ScreenStatus(
     }
 }
 
+@Composable
 private fun heroSubtitle(
     state: ProductCatalogState,
-    strings: CatalogStrings,
 ): String = when {
-    state.isLoading -> strings.heroLoadingSubtitle
-    state.errorMessage != null && state.products.isEmpty() -> strings.heroErrorSubtitle
-    state.filteredProducts.isEmpty() && state.products.isNotEmpty() -> strings.heroEmptyFilteredSubtitle
-    state.filteredProducts.isEmpty() -> strings.heroEmptySubtitle
-    else -> strings.formatHeroResultsSubtitle(
+    state.isLoading -> stringResource(Res.string.hero_loading_subtitle)
+    state.errorMessage != null && state.products.isEmpty() -> stringResource(Res.string.hero_error_subtitle)
+    state.filteredProducts.isEmpty() && state.products.isNotEmpty() ->
+        stringResource(Res.string.hero_empty_filtered_subtitle)
+    state.filteredProducts.isEmpty() -> stringResource(Res.string.hero_empty_subtitle)
+    else -> formatHeroResultsSubtitle(
         visibleCount = state.visibleProducts.size,
         totalCount = state.filteredProducts.size,
     )
 }
 
+@Composable
 private fun errorSubtitle(
     errorMessage: String?,
-    strings: CatalogStrings,
 ): String = when (errorMessage) {
     null,
     GenericLoadErrorToken,
-    -> strings.genericLoadError
+    -> genericLoadError()
+
     else -> errorMessage
 }
 

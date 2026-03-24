@@ -26,16 +26,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.artem.korenyakin.internassignment03.feature.catalog.CatalogStrings
 import com.artem.korenyakin.internassignment03.feature.catalog.formatRatingValue
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.Res
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.category
 import com.artem.korenyakin.internassignment03.model.domain.Product
 import kotlin.math.roundToInt
+import org.jetbrains.compose.resources.stringResource
 
 @Suppress("LongMethod")
 @Composable
 internal fun ProductCard(
     product: Product,
-    strings: CatalogStrings,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -105,7 +106,7 @@ internal fun ProductCard(
                     ) {
                         ProductPill(text = product.category.title)
                         ProductPill(
-                            text = strings.formatRatingValue(product.rating.toRatingText()),
+                            text = formatRatingValue(product.rating.toRatingText()),
                         )
                     }
                     Row(
@@ -152,7 +153,7 @@ internal fun ProductCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = strings.category,
+                    text = stringResource(Res.string.category),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

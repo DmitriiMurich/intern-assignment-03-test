@@ -28,17 +28,22 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.artem.korenyakin.internassignment03.feature.catalog.CatalogStrings
 import com.artem.korenyakin.internassignment03.feature.catalog.ProductCatalogState
 import com.artem.korenyakin.internassignment03.feature.catalog.categoryTitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.Res
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.category
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.dropdown_indicator
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.search_label
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.search_placeholder
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.sort_by
 import com.artem.korenyakin.internassignment03.feature.catalog.sortOptionTitle
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun ControlsSection(
     state: ProductCatalogState,
-    strings: CatalogStrings,
     onSearchQueryChanged: (String) -> Unit,
     onCategorySelected: (ProductCategory) -> Unit,
     onSortOptionSelected: (SortOption) -> Unit,
@@ -47,7 +52,7 @@ internal fun ControlsSection(
     val sortOptions = SortOption.entries.map { sortOption ->
         DropdownOption(
             value = sortOption,
-            title = strings.sortOptionTitle(sortOption),
+            title = sortOptionTitle(sortOption),
         )
     }
 
@@ -66,13 +71,12 @@ internal fun ControlsSection(
         ) {
             SearchBar(
                 query = state.searchQuery,
-                label = strings.searchLabel,
-                placeholder = strings.searchPlaceholder,
+                label = stringResource(Res.string.search_label),
+                placeholder = stringResource(Res.string.search_placeholder),
                 onQueryChanged = onSearchQueryChanged,
                 modifier = Modifier.fillMaxWidth(),
             )
             CategoryChipsSection(
-                strings = strings,
                 categories = state.categories,
                 selectedCategory = state.selectedCategory,
                 onCategorySelected = { category ->
@@ -81,10 +85,10 @@ internal fun ControlsSection(
                 },
             )
             CatalogDropdown(
-                title = strings.sortBy,
-                selectedTitle = strings.sortOptionTitle(state.selectedSortOption),
+                title = stringResource(Res.string.sort_by),
+                selectedTitle = sortOptionTitle(state.selectedSortOption),
                 options = sortOptions,
-                indicatorText = strings.dropdownIndicator,
+                indicatorText = stringResource(Res.string.dropdown_indicator),
                 onSelected = onSortOptionSelected,
                 onExpanded = { focusManager.clearFocus() },
             )
@@ -95,7 +99,6 @@ internal fun ControlsSection(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CategoryChipsSection(
-    strings: CatalogStrings,
     categories: List<ProductCategory>,
     selectedCategory: ProductCategory,
     onCategorySelected: (ProductCategory) -> Unit,
@@ -104,7 +107,7 @@ private fun CategoryChipsSection(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            text = strings.category,
+            text = stringResource(Res.string.category),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -115,7 +118,7 @@ private fun CategoryChipsSection(
         ) {
             categories.forEach { category ->
                 CategoryChip(
-                    title = strings.categoryTitle(category),
+                    title = categoryTitle(category),
                     isSelected = category == selectedCategory,
                     onClick = { onCategorySelected(category) },
                 )

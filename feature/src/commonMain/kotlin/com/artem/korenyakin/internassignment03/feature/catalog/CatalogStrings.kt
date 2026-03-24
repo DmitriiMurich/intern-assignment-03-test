@@ -1,90 +1,59 @@
 package com.artem.korenyakin.internassignment03.feature.catalog
 
+import androidx.compose.runtime.Composable
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.Res
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.category_all
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.generic_load_error
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.hero_results_subtitle
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.rating_value
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.results_summary
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.sort_price_asc
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.sort_price_desc
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.sort_rating_desc
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
+import org.jetbrains.compose.resources.stringResource
 
-data class CatalogStrings(
-    val searchLabel: String,
-    val searchPlaceholder: String,
-    val heroLabel: String,
-    val heroTitle: String,
-    val heroLoadingSubtitle: String,
-    val heroErrorSubtitle: String,
-    val heroEmptyFilteredSubtitle: String,
-    val heroEmptySubtitle: String,
-    val heroResultsSubtitle: String,
-    val loadingCatalogTitle: String,
-    val loadingCatalogSubtitle: String,
-    val requestFailedLabel: String,
-    val requestFailedTitle: String,
-    val genericLoadError: String,
-    val retry: String,
-    val noResultsLabel: String,
-    val noResultsTitle: String,
-    val noResultsFilteredSubtitle: String,
-    val noResultsSubtitle: String,
-    val resetFilters: String,
-    val sortBy: String,
-    val category: String,
-    val results: String,
-    val resultsSummary: String,
-    val ratingValue: String,
-    val dropdownIndicator: String,
-    val sortPriceAsc: String,
-    val sortPriceDesc: String,
-    val sortRatingDesc: String,
-    val categoryAll: String,
-)
-
-internal fun CatalogStrings.categoryTitle(category: ProductCategory): String = when (category) {
-    ProductCategory.ALL -> categoryAll
+@Composable
+internal fun categoryTitle(category: ProductCategory): String = when (category) {
+    ProductCategory.ALL -> stringResource(Res.string.category_all)
     else -> category.title
 }
 
-internal fun CatalogStrings.sortOptionTitle(sortOption: SortOption): String = when (sortOption) {
-    SortOption.PRICE_ASC -> sortPriceAsc
-    SortOption.PRICE_DESC -> sortPriceDesc
-    SortOption.RATING_DESC -> sortRatingDesc
+@Composable
+internal fun sortOptionTitle(sortOption: SortOption): String = when (sortOption) {
+    SortOption.PRICE_ASC -> stringResource(Res.string.sort_price_asc)
+    SortOption.PRICE_DESC -> stringResource(Res.string.sort_price_desc)
+    SortOption.RATING_DESC -> stringResource(Res.string.sort_rating_desc)
 }
 
-internal fun CatalogStrings.formatHeroResultsSubtitle(
+@Composable
+internal fun formatHeroResultsSubtitle(
     visibleCount: Int,
     totalCount: Int,
-): String = formatTemplate(
-    template = heroResultsSubtitle,
+): String = stringResource(
+    resource = Res.string.hero_results_subtitle,
     visibleCount,
     totalCount,
 )
 
-internal fun CatalogStrings.formatResultsSummary(
+@Composable
+internal fun formatResultsSummary(
     visibleCount: Int,
     totalCount: Int,
-): String = formatTemplate(
-    template = resultsSummary,
+): String = stringResource(
+    resource = Res.string.results_summary,
     visibleCount,
     totalCount,
 )
 
-internal fun CatalogStrings.formatRatingValue(
+@Composable
+internal fun formatRatingValue(
     rating: String,
-): String = formatTemplate(
-    template = ratingValue,
+): String = stringResource(
+    resource = Res.string.rating_value,
     rating,
 )
 
-private fun formatTemplate(
-    template: String,
-    vararg args: Any,
-): String {
-    var formattedText: String = template
-
-    args.forEachIndexed { index, value ->
-        val placeholderIndex: Int = index + 1
-        val replacement: String = value.toString()
-        formattedText = formattedText
-            .replace("%${placeholderIndex}\$d", replacement)
-            .replace("%${placeholderIndex}\$s", replacement)
-    }
-
-    return formattedText
-}
+@Composable
+internal fun genericLoadError(): String = stringResource(Res.string.generic_load_error)

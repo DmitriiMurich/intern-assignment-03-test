@@ -1,33 +1,3 @@
 <resources>
     <string name="app_name">intern-assignment-03</string>
-    <string name="search_label">Search</string>
-    <string name="search_placeholder">Try lemon or perfume</string>
-    <string name="hero_label">PRODUCT CATALOG</string>
-    <string name="hero_title">Deals, picks and fast filters</string>
-    <string name="hero_loading_subtitle">Loading fresh items.</string>
-    <string name="hero_error_subtitle">There was a problem loading products from the API.</string>
-    <string name="hero_empty_filtered_subtitle">Adjust the query or filters to find matching items.</string>
-    <string name="hero_empty_subtitle">No products are available right now.</string>
-    <string name="hero_results_subtitle">Showing %1$d of %2$d items.</string>
-    <string name="loading_catalog_title">Loading catalog</string>
-    <string name="loading_catalog_subtitle">Fetching products and categories from the API</string>
-    <string name="request_failed_label">REQUEST FAILED</string>
-    <string name="request_failed_title">Could not load the catalog</string>
-    <string name="generic_load_error">Could not load the catalog</string>
-    <string name="retry">Retry</string>
-    <string name="no_results_label">NO RESULTS</string>
-    <string name="no_results_title">Nothing found</string>
-    <string name="no_results_filtered_subtitle">Try another query or reset the filters.</string>
-    <string name="no_results_subtitle">No products are available right now.</string>
-    <string name="reset_filters">Reset filters</string>
-    <string name="sort_by">Sort by</string>
-    <string name="category">Category</string>
-    <string name="results">Results</string>
-    <string name="results_summary">%1$d of %2$d</string>
-    <string name="rating_value">Rating %1$s</string>
-    <string name="dropdown_indicator">&#9662;</string>
-    <string name="sort_price_asc">Price: low to high</string>
-    <string name="sort_price_desc">Price: high to low</string>
-    <string name="sort_rating_desc">Rating: high to low</string>
-    <string name="category_all">All</string>
 </resources>
