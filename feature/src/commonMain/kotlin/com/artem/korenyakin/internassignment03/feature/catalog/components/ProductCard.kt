@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,9 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.artem.korenyakin.internassignment03.model.domain.Product
 import kotlin.math.roundToInt
 
@@ -54,7 +57,7 @@ internal fun ProductCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(132.dp)
+                    .height(148.dp)
                     .clip(RoundedCornerShape(22.dp))
                     .background(
                         brush = Brush.linearGradient(
@@ -63,11 +66,33 @@ internal fun ProductCard(
                                 MaterialTheme.colorScheme.secondaryContainer,
                             ),
                         ),
-                    )
-                    .padding(16.dp),
+                    ),
             ) {
+                AsyncImage(
+                    model = product.imageUrl.takeIf { url -> url.isNotBlank() },
+                    contentDescription = product.title,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp, vertical = 14.dp),
+                    contentScale = ContentScale.Fit,
+                    alignment = Alignment.Center,
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.34f),
+                                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.26f),
+                                ),
+                            ),
+                        ),
+                )
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Row(
@@ -82,14 +107,12 @@ internal fun ProductCard(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom,
                     ) {
-                        Column {
-                            Text(
-                                text = product.price.toPriceText(),
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
+                        Text(
+                            text = product.price.toPriceText(),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
+                        )
                         Text(
                             text = product.title.take(1).uppercase(),
                             style = MaterialTheme.typography.displaySmall,
