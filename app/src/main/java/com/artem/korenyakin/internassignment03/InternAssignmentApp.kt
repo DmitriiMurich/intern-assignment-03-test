@@ -1,9 +1,10 @@
-﻿package com.artem.korenyakin.internassignment03
+package com.artem.korenyakin.internassignment03
 
 import android.app.Application
+import com.artem.korenyakin.internassignment03.di.appModule
+import com.artem.korenyakin.internassignment03.feature.catalog.di.featureModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
-import com.artem.korenyakin.internassignment03.feature.catalog.di.featureModule
 
 class InternAssignmentApp : Application() {
     override fun onCreate() {
@@ -11,7 +12,10 @@ class InternAssignmentApp : Application() {
 
         startKoin {
             androidContext(this@InternAssignmentApp)
-            modules(featureModule)
+            modules(
+                appModule,
+                featureModule,
+            )
         }
     }
 }
