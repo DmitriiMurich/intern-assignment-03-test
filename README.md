@@ -236,3 +236,6 @@ intern-assignment-03/
 
 - добавить backend/BFF-слой для серверной пагинации и единой комбинированной фильтрации
 - добавить мультиязычность UI и перевод контента каталога через backend/proxy
+## Backend
+
+See [backend/README.md](backend/README.md) for the new Node.js + TypeScript BFF service with PostgreSQL, DeepL-based translation caching, and Docker startup instructions.
