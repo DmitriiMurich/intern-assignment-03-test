@@ -238,4 +238,162 @@ intern-assignment-03/
 - добавить мультиязычность UI и перевод контента каталога через backend/proxy
 ## Backend
 
-See [backend/README.md](backend/README.md) for the new Node.js + TypeScript BFF service with PostgreSQL, DeepL-based translation caching, and Docker startup instructions.
+В репозитории появился отдельный backend-сервис на `Node.js + TypeScript`, который живёт рядом с Android-приложением в папке `backend/`.
+
+Зачем он нужен:
+
+- мобильный клиент больше не должен ходить напрямую в `DummyJSON`;
+- переводы нельзя безопасно делать прямо на клиенте, потому что ключи переводчика нельзя хранить в приложении;
+- поиск, фильтрация, сортировка и пагинация теперь могут выполняться на сервере;
+- переводы кешируются в `PostgreSQL`, поэтому backend не переводит один и тот же товар заново на каждый запрос.
+
+### Как работает backend
+
+Схема работы такая:
+
+```text
+mobile app -> backend -> DummyJSON
+                     -> Yandex Translate
+                     -> PostgreSQL
+```
+
+Backend:
+
+- загружает source-каталог из `DummyJSON`;
+- хранит исходные данные на английском в `PostgreSQL`;
+- при запросе не-английского языка переводит `title`, `description` и названия категорий через `Yandex Translate`;
+- сохраняет переводы в БД;
+- отдает клиенту уже локализованный список товаров;
+- сам применяет `query`, `category`, `sort`, `page`, `pageSize`.
+
+Если source-каталог еще не загружен, backend подтянет его автоматически при первом запросе к каталогу.
+
+### Эндпоинты backend
+
+`GET /health`
+
+- liveness-check сервиса
+
+`GET /api/v1/languages`
+
+- возвращает список поддерживаемых языков API
+
+`GET /api/v1/catalog`
+
+- главный эндпоинт каталога
+- поддерживает локализацию, поиск, фильтрацию, сортировку и серверную пагинацию
+
+Параметры `GET /api/v1/catalog`:
+
+- `lang` — язык ответа, по умолчанию `en`
+- `page` — номер страницы, начиная с `1`
+- `pageSize` — размер страницы, по умолчанию `20`, максимум `100`
+- `query` — поисковая строка
+- `category` — `slug` категории
+- `sort` — одно из значений: `price_asc`, `price_desc`, `rating_desc`
+
+Пример:
+
+```text
+GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&sort=price_asc
+```
+
+`POST /api/v1/catalog/sync`
+
+- принудительно обновляет source-каталог из `DummyJSON`
+- сбрасывает кеш переводов
+
+### Поддерживаемые языки
+
+Список языков сейчас фиксирован в коде backend-а:
+
+- `en`
+- `ru`
+- `de`
+- `fr`
+- `es`
+- `it`
+- `pt`
+- `tr`
+- `uk`
+- `zh`
+
+### Переменные окружения backend
+
+Пример лежит в `backend/.env.example`.
+
+Используются такие переменные:
+
+- `HOST` — адрес, на котором слушает backend
+- `PORT` — порт backend
+- `DATABASE_URL` — строка подключения к `PostgreSQL`
+- `DUMMYJSON_BASE_URL` — базовый URL `DummyJSON`
+- `YANDEX_TRANSLATE_API_URL` — URL REST-метода `Yandex Translate`
+- `YANDEX_TRANSLATE_API_KEY` — API key для `Yandex Translate`
+- `YANDEX_FOLDER_ID` — folder ID в `Yandex Cloud`
+
+Пример:
+
+```env
+HOST=0.0.0.0
+PORT=8080
+DATABASE_URL=postgresql://catalog:catalog@localhost:5432/catalog
+DUMMYJSON_BASE_URL=https://dummyjson.com
+YANDEX_TRANSLATE_API_URL=https://translate.api.cloud.yandex.net/translate/v2/translate
+YANDEX_TRANSLATE_API_KEY=<your-api-key>
+YANDEX_FOLDER_ID=<your-folder-id>
+```
+
+### Откуда взять Yandex Cloud параметры
+
+Для `YANDEX_TRANSLATE_API_KEY` и `YANDEX_FOLDER_ID` нужны ресурсы в `Yandex Cloud`.
+
+Что нужно сделать:
+
+1. Создать или выбрать cloud и folder.
+2. Включить `Translate API`.
+3. Создать сервисный аккаунт.
+4. Выдать ему права на работу с `Translate API`.
+5. Создать `API key`.
+6. Скопировать `folder ID`.
+
+Официальные ссылки:
+
+- Translate overview: https://yandex.cloud/en/docs/translate/
+- REST reference: https://yandex.cloud/en/docs/translate/api-ref/Translation/translate
+- Access via API key: https://yandex.cloud/en/docs/translate/operations/sa-api-key
+
+### Как запустить backend
+
+Через Docker:
+
+```bash
+docker compose up --build
+```
+
+После запуска backend будет доступен на:
+
+```text
+http://localhost:8080
+```
+
+Swagger UI:
+
+```text
+http://localhost:8080/docs
+```
+
+Локальный запуск без Docker для backend:
+
+```bash
+docker compose up -d postgres
+cd backend
+npm install
+npm run dev
+```
+
+### Где лежит полная документация
+
+Подробная документация backend-а вынесена в отдельный файл:
+
+- [backend/README.md](backend/README.md)
