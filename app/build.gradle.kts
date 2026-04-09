@@ -4,6 +4,10 @@ plugins {
 }
 
 android {
+    val backendBaseUrl = providers.gradleProperty("backend.baseUrl")
+        .orElse("http://10.0.2.2:8080/")
+        .get()
+
     namespace = "com.artem.korenyakin.internassignment03"
     compileSdk = 36
 
@@ -13,6 +17,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "BACKEND_BASE_URL", "\"$backendBaseUrl\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,11 +39,14 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
     implementation(project(":feature"))
+    implementation(project(":model"))
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
