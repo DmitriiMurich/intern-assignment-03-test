@@ -1,6 +1,8 @@
 package com.artem.korenyakin.internassignment03.feature.catalog
 
 import com.artem.korenyakin.internassignment03.feature.catalog.domain.SearchProductsUseCase
+import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
+import com.artem.korenyakin.internassignment03.model.domain.Money
 import com.artem.korenyakin.internassignment03.model.domain.Product
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
@@ -66,7 +68,7 @@ internal class SearchProductsUseCaseTest {
 
         assertEquals(
             listOf(1.5, 7.0, 12.0, 19.0, 999.0),
-            result.map(Product::price),
+            result.map { product -> product.price.amount },
         )
     }
 
@@ -148,7 +150,10 @@ internal class SearchProductsUseCaseTest {
         id = id,
         title = title,
         description = "$title description",
-        price = price,
+        price = Money(
+            amount = price,
+            currency = CurrencyOption.USD,
+        ),
         imageUrl = "https://example.com/$id.png",
         rating = rating,
         category = category,

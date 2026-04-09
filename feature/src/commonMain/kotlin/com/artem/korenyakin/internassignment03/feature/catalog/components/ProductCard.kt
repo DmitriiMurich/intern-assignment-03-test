@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.artem.korenyakin.internassignment03.feature.catalog.formatPrice
 import com.artem.korenyakin.internassignment03.feature.catalog.formatRatingValue
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.Res
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.category
@@ -115,7 +116,7 @@ internal fun ProductCard(
                         verticalAlignment = Alignment.Bottom,
                     ) {
                         Text(
-                            text = product.price.toPriceText(),
+                            text = formatPrice(product.price),
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Bold,
@@ -191,21 +192,7 @@ private fun ProductPill(
 
 private const val ProductPillSurfaceAlpha: Float = 0.94f
 private const val ProductPillBorderAlpha: Float = 0.75f
-private const val PriceFractionMultiplier: Double = 100.0
-private const val PriceTrimSuffixLength: Int = 2
 private const val RatingFractionMultiplier: Double = 10.0
-
-private fun Double.toPriceText(): String {
-    val roundedValue = ((this * PriceFractionMultiplier).roundToInt() / PriceFractionMultiplier)
-    val rawText = roundedValue.toString()
-    val normalizedText = if (rawText.endsWith(".0")) {
-        rawText.dropLast(PriceTrimSuffixLength)
-    } else {
-        rawText
-    }
-
-    return "$$normalizedText"
-}
 
 private fun Double.toRatingText(): String {
     val roundedValue = ((this * RatingFractionMultiplier).roundToInt() / RatingFractionMultiplier)

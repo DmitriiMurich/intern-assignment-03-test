@@ -30,12 +30,18 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.artem.korenyakin.internassignment03.feature.catalog.ProductCatalogState
 import com.artem.korenyakin.internassignment03.feature.catalog.categoryTitle
+import com.artem.korenyakin.internassignment03.feature.catalog.currencyTitle
+import com.artem.korenyakin.internassignment03.feature.catalog.languageTitle
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.Res
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.category
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.currency
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.dropdown_indicator
+import com.artem.korenyakin.internassignment03.feature.catalog.resources.language
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.search_label
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.search_placeholder
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.sort_by
+import com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage
+import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
 import com.artem.korenyakin.internassignment03.feature.catalog.sortOptionTitle
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
@@ -45,10 +51,24 @@ import org.jetbrains.compose.resources.stringResource
 internal fun ControlsSection(
     state: ProductCatalogState,
     onSearchQueryChanged: (String) -> Unit,
+    onLanguageSelected: (CatalogLanguage) -> Unit,
+    onCurrencySelected: (CurrencyOption) -> Unit,
     onCategorySelected: (ProductCategory) -> Unit,
     onSortOptionSelected: (SortOption) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
+    val languageOptions = state.languages.map { language ->
+        DropdownOption(
+            value = language,
+            title = languageTitle(language),
+        )
+    }
+    val currencyOptions = state.currencies.map { currency ->
+        DropdownOption(
+            value = currency,
+            title = currencyTitle(currency),
+        )
+    }
     val sortOptions = SortOption.entries.map { sortOption ->
         DropdownOption(
             value = sortOption,
@@ -75,6 +95,22 @@ internal fun ControlsSection(
                 placeholder = stringResource(Res.string.search_placeholder),
                 onQueryChanged = onSearchQueryChanged,
                 modifier = Modifier.fillMaxWidth(),
+            )
+            CatalogDropdown(
+                title = stringResource(Res.string.language),
+                selectedTitle = languageTitle(state.selectedLanguage),
+                options = languageOptions,
+                indicatorText = stringResource(Res.string.dropdown_indicator),
+                onSelected = onLanguageSelected,
+                onExpanded = { focusManager.clearFocus() },
+            )
+            CatalogDropdown(
+                title = stringResource(Res.string.currency),
+                selectedTitle = currencyTitle(state.selectedCurrency),
+                options = currencyOptions,
+                indicatorText = stringResource(Res.string.dropdown_indicator),
+                onSelected = onCurrencySelected,
+                onExpanded = { focusManager.clearFocus() },
             )
             CategoryChipsSection(
                 categories = state.categories,

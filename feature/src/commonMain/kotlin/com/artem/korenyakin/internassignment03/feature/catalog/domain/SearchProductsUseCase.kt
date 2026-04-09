@@ -26,8 +26,8 @@ internal class SearchProductsUseCase {
     }
 
     private fun sortComparator(sortOption: SortOption): Comparator<Product> = when (sortOption) {
-        SortOption.PRICE_ASC -> compareBy(Product::price, Product::title)
-        SortOption.PRICE_DESC -> compareByDescending<Product> { product -> product.price }
+        SortOption.PRICE_ASC -> compareBy<Product>({ product -> product.price.amount }, Product::title)
+        SortOption.PRICE_DESC -> compareByDescending<Product> { product -> product.price.amount }
             .thenBy(Product::title)
         SortOption.RATING_DESC -> compareByDescending<Product> { product -> product.rating }
             .thenBy(Product::title)

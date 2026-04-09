@@ -1,14 +1,19 @@
-﻿package com.artem.korenyakin.internassignment03.feature.catalog
+package com.artem.korenyakin.internassignment03.feature.catalog
 
-import com.artem.korenyakin.internassignment03.feature.catalog.domain.SearchProductsUseCase
-import com.artem.korenyakin.internassignment03.model.domain.Product
+import com.artem.korenyakin.internassignment03.feature.catalog.data.repository.CatalogConnectionException
+import com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage
+import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
+import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogPage
+import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogQuery
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
+import com.artem.korenyakin.internassignment03.model.repository.AppLanguageManager
 import com.artem.korenyakin.internassignment03.model.repository.ProductRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,83 +21,137 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 internal class ProductCatalogViewModel(
     private val productRepository: ProductRepository,
-    private val searchProductsUseCase: SearchProductsUseCase,
+    private val appLanguageManager: AppLanguageManager,
     dispatcher: CoroutineDispatcher = Dispatchers.Main.immediate,
 ) {
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + dispatcher)
-    private val allProductsFlow: MutableStateFlow<List<Product>> = MutableStateFlow(emptyList())
-    private val categoriesFlow: MutableStateFlow<List<ProductCategory>> = MutableStateFlow(listOf(ProductCategory.ALL))
+    private val bootstrapCompletedFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private val searchQueryFlow: MutableStateFlow<String> = MutableStateFlow("")
     private val selectedCategoryFlow: MutableStateFlow<ProductCategory> = MutableStateFlow(ProductCategory.ALL)
     private val selectedSortOptionFlow: MutableStateFlow<SortOption> = MutableStateFlow(SortOption.PRICE_ASC)
-    private val loadedPagesFlow: MutableStateFlow<Int> = MutableStateFlow(1)
+    private val selectedLanguageFlow: MutableStateFlow<CatalogLanguage> = MutableStateFlow(CatalogLanguage.ENGLISH)
+    private val selectedCurrencyFlow: MutableStateFlow<CurrencyOption> = MutableStateFlow(CurrencyOption.USD)
+
+    private var refreshJob: Job? = null
+    private var loadMoreJob: Job? = null
+    private var latestRequest: CatalogRequest? = null
 
     private val _state: MutableStateFlow<ProductCatalogState> = MutableStateFlow(ProductCatalogState())
     internal val state: StateFlow<ProductCatalogState> = _state.asStateFlow()
 
     init {
-        observeCatalog()
-        loadCatalog()
+        observeCatalogRequests()
+        bootstrap()
     }
 
     internal fun onSearchQueryChanged(query: String) {
         searchQueryFlow.value = query
-        resetPagination()
-        updateFilterState(
-            searchQuery = query,
-        )
+        _state.update { currentState ->
+            currentState.copy(
+                searchQuery = query,
+            )
+        }
+    }
+
+    internal fun onLanguageSelected(language: CatalogLanguage) {
+        if (selectedLanguageFlow.value.code == language.code) {
+            return
+        }
+
+        selectedLanguageFlow.value = language
+        _state.update { currentState ->
+            currentState.copy(
+                selectedLanguage = language,
+            )
+        }
+        appLanguageManager.updateLanguage(language.code)
+    }
+
+    internal fun onCurrencySelected(currency: CurrencyOption) {
+        if (selectedCurrencyFlow.value.code == currency.code) {
+            return
+        }
+
+        selectedCurrencyFlow.value = currency
+        _state.update { currentState ->
+            currentState.copy(
+                selectedCurrency = currency,
+            )
+        }
     }
 
     internal fun onCategorySelected(category: ProductCategory) {
         selectedCategoryFlow.value = category
-        resetPagination()
-        updateFilterState(
-            selectedCategory = category,
-        )
+        _state.update { currentState ->
+            currentState.copy(
+                selectedCategory = category,
+            )
+        }
     }
 
     internal fun onSortOptionSelected(sortOption: SortOption) {
         selectedSortOptionFlow.value = sortOption
-        resetPagination()
-        updateFilterState(
-            selectedSortOption = sortOption,
-        )
+        _state.update { currentState ->
+            currentState.copy(
+                selectedSortOption = sortOption,
+            )
+        }
     }
 
     internal fun resetFilters() {
         searchQueryFlow.value = ""
         selectedCategoryFlow.value = ProductCategory.ALL
         selectedSortOptionFlow.value = SortOption.PRICE_ASC
-        resetPagination()
-        updateFilterState(
-            searchQuery = "",
-            selectedCategory = ProductCategory.ALL,
-            selectedSortOption = SortOption.PRICE_ASC,
-        )
+
+        _state.update { currentState ->
+            currentState.copy(
+                searchQuery = "",
+                selectedCategory = ProductCategory.ALL,
+                selectedSortOption = SortOption.PRICE_ASC,
+            )
+        }
     }
 
     internal fun loadMore() {
         val currentState = state.value
-        if (currentState.isLoading || currentState.isLoadingMore || !currentState.canLoadMore) {
+        if (
+            currentState.isLoading ||
+            currentState.isLoadingMore ||
+            !currentState.canLoadMore
+        ) {
             return
         }
 
-        _state.update { updatedState ->
-            updatedState.copy(
-                isLoadingMore = true,
-            )
+        val nextPage = currentState.currentPage + 1
+        val nextQuery = buildCatalogQuery(page = nextPage)
+
+        loadMoreJob?.cancel()
+        loadMoreJob = scope.launch {
+            _state.update { updatedState ->
+                updatedState.copy(
+                    isLoadingMore = true,
+                    errorMessage = null,
+                )
+            }
+
+            runCatching {
+                productRepository.getCatalog(nextQuery)
+            }.onSuccess { loadedPage ->
+                handleLoadMoreSuccess(loadedPage)
+            }.onFailure { throwable ->
+                handleLoadFailure(throwable)
+            }
         }
-        loadedPagesFlow.value = loadedPagesFlow.value + 1
     }
 
     internal fun retryLoad() {
-        resetPagination()
-        loadCatalog()
+        refreshCatalog(latestRequest ?: currentRequest())
     }
 
     internal fun clear() {
@@ -100,81 +159,134 @@ internal class ProductCatalogViewModel(
     }
 
     @OptIn(FlowPreview::class)
-    private fun observeCatalog() {
-        val catalogSourceFlow = combine(
-            allProductsFlow,
-            categoriesFlow,
-        ) { products, categories ->
-            CatalogSource(
-                products = products,
-                categories = categories,
-            )
-        }
-
+    private fun observeCatalogRequests() {
         scope.launch {
             combine(
-                catalogSourceFlow,
-                searchQueryFlow.debounce(SEARCH_DEBOUNCE_MS),
-                selectedCategoryFlow,
-                selectedSortOptionFlow,
-                loadedPagesFlow,
-            ) { catalogSource, debouncedQuery, selectedCategory, selectedSortOption, loadedPages ->
-                deriveCatalog(
-                    products = catalogSource.products,
-                    categories = catalogSource.categories,
-                    query = debouncedQuery,
-                    selectedCategory = selectedCategory,
-                    selectedSortOption = selectedSortOption,
-                    loadedPages = loadedPages,
-                )
-            }.collect(::applyDerivedCatalog)
+                bootstrapCompletedFlow,
+                combine(
+                    searchQueryFlow.debounce(SEARCH_DEBOUNCE_MS),
+                    selectedCategoryFlow,
+                    selectedSortOptionFlow,
+                    selectedLanguageFlow,
+                    selectedCurrencyFlow,
+                ) { query, category, sortOption, language, currency ->
+                    CatalogRequest(
+                        query = query,
+                        category = category,
+                        sortOption = sortOption,
+                        language = language,
+                        currency = currency,
+                    )
+                },
+            ) { isBootstrapCompleted, request ->
+                request.takeIf { isBootstrapCompleted }
+            }.filterNotNull()
+                .collect { request ->
+                    latestRequest = request
+                    refreshCatalog(request)
+                }
         }
     }
 
-    private fun loadCatalog() {
+    private fun bootstrap() {
         scope.launch {
+            val languages = runCatching {
+                productRepository.getLanguages()
+            }.getOrDefault(CatalogLanguage.SupportedLanguages)
+                .ifEmpty { CatalogLanguage.SupportedLanguages }
+            val currencies = runCatching {
+                productRepository.getCurrencies()
+            }.getOrDefault(CurrencyOption.SupportedCurrencies)
+                .ifEmpty { CurrencyOption.SupportedCurrencies }
+            val preferredLanguageCode = appLanguageManager.getCurrentLanguageCode()
+
+            val initialLanguage = languages.firstOrNull { language ->
+                language.code == preferredLanguageCode
+            } ?: languages.firstOrNull { language ->
+                language.isSourceLanguage
+            } ?: languages.first()
+            val initialCurrency = currencies.firstOrNull { currency ->
+                currency.isSourceCurrency
+            } ?: currencies.first()
+
+            selectedLanguageFlow.value = initialLanguage
+            selectedCurrencyFlow.value = initialCurrency
+            _state.update { currentState ->
+                currentState.copy(
+                    languages = languages,
+                    selectedLanguage = initialLanguage,
+                    currencies = currencies,
+                    selectedCurrency = initialCurrency,
+                )
+            }
+            bootstrapCompletedFlow.value = true
+        }
+    }
+
+    private fun refreshCatalog() {
+        refreshCatalog(currentRequest())
+    }
+
+    private fun refreshCatalog(
+        request: CatalogRequest,
+    ) {
+        refreshJob?.cancel()
+        loadMoreJob?.cancel()
+        refreshJob = scope.launch {
             showLoadingState()
 
             runCatching {
-                requestCatalog()
-            }.onSuccess(::handleLoadSuccess)
-                .onFailure(::handleLoadFailure)
+                productRepository.getCatalog(
+                    buildCatalogQuery(
+                        page = ProductCatalogState.InitialPage,
+                        request = request,
+                    ),
+                )
+            }.onSuccess { loadedPage ->
+                handleRefreshSuccess(loadedPage)
+            }.onFailure { throwable ->
+                handleLoadFailure(throwable)
+            }
         }
     }
 
-    private suspend fun requestCatalog(): LoadedCatalog {
-        val products = productRepository.getProducts(
-            page = 0,
-            pageSize = REMOTE_PAGE_SIZE,
-        )
-        val categories = productRepository.getCategories()
+    private fun buildCatalogQuery(
+        page: Int,
+        request: CatalogRequest = currentRequest(),
+    ): ProductCatalogQuery = ProductCatalogQuery(
+        page = page,
+        pageSize = state.value.pageSize,
+        searchQuery = request.query,
+        categorySlug = request.category
+            .takeUnless { category -> category == ProductCategory.ALL }
+            ?.slug,
+        sortOption = request.sortOption,
+        languageCode = request.language.code,
+        currencyCode = request.currency.code,
+    )
 
-        return LoadedCatalog(
-            products = products,
-            categories = categories,
-        )
-    }
+    private fun currentRequest(): CatalogRequest = CatalogRequest(
+        query = searchQueryFlow.value,
+        category = selectedCategoryFlow.value,
+        sortOption = selectedSortOptionFlow.value,
+        language = selectedLanguageFlow.value,
+        currency = selectedCurrencyFlow.value,
+    )
 
-    private fun handleLoadSuccess(loadedCatalog: LoadedCatalog) {
-        val categories = loadedCatalog.categories.orDefault()
-        val initialCatalog = deriveCatalog(
-            products = loadedCatalog.products,
-            categories = categories,
-            query = searchQueryFlow.value,
-            selectedCategory = selectedCategoryFlow.value,
-            selectedSortOption = selectedSortOptionFlow.value,
-            loadedPages = loadedPagesFlow.value,
-        )
+    private fun handleRefreshSuccess(
+        loadedPage: ProductCatalogPage,
+    ) {
+        val categories = loadedPage.categories.withAllCategory()
 
-        categoriesFlow.value = categories
-        allProductsFlow.value = loadedCatalog.products
         _state.update { currentState ->
             currentState.copy(
-                categories = initialCatalog.categories,
-                products = initialCatalog.products,
-                filteredProducts = initialCatalog.filteredProducts,
-                visibleProducts = initialCatalog.visibleProducts,
-                canLoadMore = initialCatalog.canLoadMore,
+                categories = categories,
+                products = loadedPage.products,
+                totalProducts = loadedPage.totalProducts,
+                currentPage = loadedPage.currentPage,
+                pageSize = loadedPage.pageSize,
+                totalPages = loadedPage.totalPages,
+                canLoadMore = loadedPage.currentPage < loadedPage.totalPages,
                 isLoading = false,
                 isLoadingMore = false,
                 errorMessage = null,
@@ -182,76 +294,37 @@ internal class ProductCatalogViewModel(
         }
     }
 
-    private fun handleLoadFailure(throwable: Throwable) {
-        val categories = listOf(ProductCategory.ALL)
-        categoriesFlow.value = categories
-        allProductsFlow.value = emptyList()
-        _state.update { currentState ->
-            currentState.copy(
-                categories = categories,
-                products = emptyList(),
-                filteredProducts = emptyList(),
-                visibleProducts = emptyList(),
-                isLoading = false,
-                isLoadingMore = false,
-                canLoadMore = false,
-                errorMessage = throwable.message ?: GenericLoadErrorToken,
-            )
-        }
-    }
-
-    private fun deriveCatalog(
-        products: List<Product>,
-        categories: List<ProductCategory>,
-        query: String,
-        selectedCategory: ProductCategory,
-        selectedSortOption: SortOption,
-        loadedPages: Int,
-    ): DerivedCatalog {
-        val filteredProducts = searchProductsUseCase(
-            products = products,
-            query = query,
-            selectedCategory = selectedCategory,
-            selectedSortOption = selectedSortOption,
-        )
-        val visibleCount = (loadedPages * VISIBLE_PAGE_SIZE).coerceAtMost(filteredProducts.size)
-
-        return DerivedCatalog(
-            categories = categories,
-            products = products,
-            filteredProducts = filteredProducts,
-            visibleProducts = filteredProducts.take(visibleCount),
-            canLoadMore = visibleCount < filteredProducts.size,
-        )
-    }
-
-    private fun resetPagination() {
-        loadedPagesFlow.value = 1
-    }
-
-    private fun updateFilterState(
-        searchQuery: String = searchQueryFlow.value,
-        selectedCategory: ProductCategory = selectedCategoryFlow.value,
-        selectedSortOption: SortOption = selectedSortOptionFlow.value,
+    private fun handleLoadMoreSuccess(
+        loadedPage: ProductCatalogPage,
     ) {
         _state.update { currentState ->
             currentState.copy(
-                searchQuery = searchQuery,
-                selectedCategory = selectedCategory,
-                selectedSortOption = selectedSortOption,
+                products = (currentState.products + loadedPage.products).distinctBy { product -> product.id },
+                totalProducts = loadedPage.totalProducts,
+                currentPage = loadedPage.currentPage,
+                pageSize = loadedPage.pageSize,
+                totalPages = loadedPage.totalPages,
+                canLoadMore = loadedPage.currentPage < loadedPage.totalPages,
+                isLoadingMore = false,
+                errorMessage = null,
             )
         }
     }
 
-    private fun applyDerivedCatalog(derivedCatalog: DerivedCatalog) {
+    private fun handleLoadFailure(
+        throwable: Throwable,
+    ) {
+        val errorMessage = when (throwable) {
+            is CatalogConnectionException -> ServerConnectionErrorToken
+            else -> throwable.message ?: GenericLoadErrorToken
+        }
+
         _state.update { currentState ->
             currentState.copy(
-                categories = derivedCatalog.categories,
-                products = derivedCatalog.products,
-                filteredProducts = derivedCatalog.filteredProducts,
-                visibleProducts = derivedCatalog.visibleProducts,
-                canLoadMore = derivedCatalog.canLoadMore,
+                isLoading = false,
                 isLoadingMore = false,
+                canLoadMore = currentState.currentPage < currentState.totalPages,
+                errorMessage = errorMessage,
             )
         }
     }
@@ -261,40 +334,34 @@ internal class ProductCatalogViewModel(
             currentState.copy(
                 isLoading = true,
                 isLoadingMore = false,
+                products = emptyList(),
+                totalProducts = 0,
+                currentPage = ProductCatalogState.InitialPage,
+                totalPages = 0,
+                canLoadMore = false,
                 errorMessage = null,
             )
         }
     }
 
-    private fun List<ProductCategory>.orDefault(): List<ProductCategory> {
-        return ifEmpty {
-            listOf(ProductCategory.ALL)
+    private fun List<ProductCategory>.withAllCategory(): List<ProductCategory> {
+        return listOf(ProductCategory.ALL) + filterNot { category ->
+            category == ProductCategory.ALL
         }
     }
 
-    private data class CatalogSource(
-        val products: List<Product>,
-        val categories: List<ProductCategory>,
-    )
-
-    private data class DerivedCatalog(
-        val categories: List<ProductCategory>,
-        val products: List<Product>,
-        val filteredProducts: List<Product>,
-        val visibleProducts: List<Product>,
-        val canLoadMore: Boolean,
-    )
-
-    private data class LoadedCatalog(
-        val products: List<Product>,
-        val categories: List<ProductCategory>,
+    private data class CatalogRequest(
+        val query: String,
+        val category: ProductCategory,
+        val sortOption: SortOption,
+        val language: CatalogLanguage,
+        val currency: CurrencyOption,
     )
 
     private companion object {
         private const val SEARCH_DEBOUNCE_MS: Long = 300L
-        private const val REMOTE_PAGE_SIZE: Int = 200
-        private const val VISIBLE_PAGE_SIZE: Int = 20
     }
 }
 
 internal const val GenericLoadErrorToken: String = "__catalog_load_error__"
+internal const val ServerConnectionErrorToken: String = "__catalog_server_connection_error__"

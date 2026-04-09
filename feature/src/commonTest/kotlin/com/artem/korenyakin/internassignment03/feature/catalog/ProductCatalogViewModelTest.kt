@@ -1,9 +1,14 @@
 package com.artem.korenyakin.internassignment03.feature.catalog
 
-import com.artem.korenyakin.internassignment03.feature.catalog.domain.SearchProductsUseCase
+import com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage
+import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
+import com.artem.korenyakin.internassignment03.model.domain.Money
 import com.artem.korenyakin.internassignment03.model.domain.Product
+import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogPage
+import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogQuery
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
+import com.artem.korenyakin.internassignment03.model.repository.AppLanguageManager
 import com.artem.korenyakin.internassignment03.model.repository.ProductRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -20,7 +25,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class ProductCatalogViewModelTest {
     @Test
-    fun shouldDisplayProductsOnInit() = runTest {
+    fun shouldDisplayFirstBackendPageOnInit() = runTest {
         val viewModel = createViewModel(
             repository = FakeProductRepository(),
         )
@@ -31,40 +36,40 @@ internal class ProductCatalogViewModelTest {
             val state = viewModel.state.value
             assertFalse(state.isLoading)
             assertNull(state.errorMessage)
-            assertEquals(45, state.products.size)
-            assertEquals(20, state.visibleProducts.size)
+            assertEquals("en", state.selectedLanguage.code)
+            assertEquals(20, state.products.size)
+            assertEquals(45, state.totalProducts)
+            assertEquals(1, state.currentPage)
+            assertEquals(3, state.totalPages)
             assertTrue(state.canLoadMore)
-            assertEquals(ProductCategory.ALL, state.selectedCategory)
-            assertEquals(SortOption.PRICE_ASC, state.selectedSortOption)
         } finally {
             viewModel.clear()
         }
     }
 
     @Test
-    fun shouldFilterProductsBySearchQueryAfterDebounce() = runTest {
+    fun shouldRequestServerSearchAfterDebounce() = runTest {
+        val repository = FakeProductRepository()
         val viewModel = createViewModel(
-            repository = FakeProductRepository(),
+            repository = repository,
         )
 
         try {
             advanceUntilIdle()
 
             viewModel.onSearchQueryChanged("mint")
-            assertEquals(20, viewModel.state.value.visibleProducts.size)
+            assertEquals(20, viewModel.state.value.products.size)
 
             advanceTimeBy(299)
-            assertEquals(20, viewModel.state.value.visibleProducts.size)
+            assertEquals(20, viewModel.state.value.products.size)
 
             advanceTimeBy(1)
             advanceUntilIdle()
 
             val state = viewModel.state.value
             assertEquals("mint", state.searchQuery)
-            assertEquals(
-                listOf("Mint Tea", "Mint Toothpaste"),
-                state.visibleProducts.map(Product::title),
-            )
+            assertEquals(listOf("Mint Tea", "Mint Toothpaste"), state.products.map(Product::title))
+            assertEquals("mint", repository.catalogRequests.last().searchQuery)
             assertFalse(state.canLoadMore)
         } finally {
             viewModel.clear()
@@ -72,111 +77,140 @@ internal class ProductCatalogViewModelTest {
     }
 
     @Test
-    fun shouldFilterProductsByCategory() = runTest {
+    fun shouldFilterByCategoryAndSortOnServer() = runTest {
+        val repository = FakeProductRepository()
         val viewModel = createViewModel(
-            repository = FakeProductRepository(),
-        )
-
-        try {
-            advanceUntilIdle()
-
-            viewModel.onCategorySelected(groceriesCategory())
-            advanceUntilIdle()
-
-            val state = viewModel.state.value
-            assertEquals(groceriesCategory(), state.selectedCategory)
-            assertTrue(state.visibleProducts.all { product -> product.category == groceriesCategory() })
-            assertEquals(20, state.visibleProducts.size)
-            assertTrue(state.canLoadMore)
-        } finally {
-            viewModel.clear()
-        }
-    }
-
-    @Test
-    fun shouldSortProductsByPriceAscending() = runTest {
-        val viewModel = createViewModel(
-            repository = FakeProductRepository(),
-        )
-
-        try {
-            advanceUntilIdle()
-
-            val prices = viewModel.state.value.visibleProducts.map(Product::price)
-            val sortedPrices = prices.sorted()
-
-            assertEquals(sortedPrices, prices)
-        } finally {
-            viewModel.clear()
-        }
-    }
-
-    @Test
-    fun shouldCombineSearchAndCategoryFilters() = runTest {
-        val viewModel = createViewModel(
-            repository = FakeProductRepository(),
+            repository = repository,
         )
 
         try {
             advanceUntilIdle()
 
             viewModel.onCategorySelected(beautyCategory())
-            viewModel.onSearchQueryChanged("serum")
-            advanceTimeBy(300)
+            viewModel.onSortOptionSelected(SortOption.RATING_DESC)
             advanceUntilIdle()
 
             val state = viewModel.state.value
             assertEquals(beautyCategory(), state.selectedCategory)
-            assertEquals(listOf("Night Serum"), state.visibleProducts.map(Product::title))
+            assertEquals(SortOption.RATING_DESC, state.selectedSortOption)
+            assertTrue(state.products.all { product -> product.category == beautyCategory() })
+            assertEquals("beauty", repository.catalogRequests.last().categorySlug)
+            assertEquals(SortOption.RATING_DESC, repository.catalogRequests.last().sortOption)
         } finally {
             viewModel.clear()
         }
     }
 
     @Test
-    fun shouldExposeEmptyResultsWithoutError() = runTest {
+    fun shouldChangeLanguageAndReloadCatalog() = runTest {
+        val repository = FakeProductRepository()
+        val appLanguageManager = FakeAppLanguageManager()
         val viewModel = createViewModel(
-            repository = FakeProductRepository(),
+            repository = repository,
+            appLanguageManager = appLanguageManager,
         )
 
         try {
             advanceUntilIdle()
 
-            viewModel.onSearchQueryChanged("missing-product")
-            advanceTimeBy(300)
+            viewModel.onLanguageSelected(russianLanguage())
             advanceUntilIdle()
 
             val state = viewModel.state.value
-            assertTrue(state.visibleProducts.isEmpty())
-            assertTrue(state.filteredProducts.isEmpty())
-            assertNull(state.errorMessage)
+            assertEquals("ru", state.selectedLanguage.code)
+            assertTrue(state.products.all { product -> product.title.startsWith("[RU]") })
+            assertEquals("ru", repository.catalogRequests.last().languageCode)
+            assertEquals("ru", appLanguageManager.selectedLanguageCode)
         } finally {
             viewModel.clear()
         }
     }
 
     @Test
-    fun shouldLoadMoreProducts() = runTest {
+    fun shouldChangeCurrencyAndReloadCatalog() = runTest {
+        val repository = FakeProductRepository()
+        val viewModel = createViewModel(
+            repository = repository,
+        )
+
+        try {
+            advanceUntilIdle()
+
+            viewModel.onCurrencySelected(euroCurrency())
+            advanceUntilIdle()
+
+            val state = viewModel.state.value
+            assertEquals("EUR", state.selectedCurrency.code)
+            assertTrue(state.products.all { product -> product.price.currency.code == "EUR" })
+            assertEquals("EUR", repository.catalogRequests.last().currencyCode)
+        } finally {
+            viewModel.clear()
+        }
+    }
+
+    @Test
+    fun shouldUsePreferredAppLanguageOnInit() = runTest {
+        val viewModel = createViewModel(
+            repository = FakeProductRepository(),
+            appLanguageManager = FakeAppLanguageManager(selectedLanguageCode = "ru"),
+        )
+
+        try {
+            advanceUntilIdle()
+
+            val state = viewModel.state.value
+            assertEquals("ru", state.selectedLanguage.code)
+            assertTrue(state.products.all { product -> product.title.startsWith("[RU]") })
+        } finally {
+            viewModel.clear()
+        }
+    }
+
+    @Test
+    fun shouldKeepSupportedLanguagesWhenLanguageRequestFailsOffline() = runTest {
+        val repository = FakeProductRepository().apply {
+            languagesError = IllegalStateException("Network unavailable")
+        }
+        val viewModel = createViewModel(
+            repository = repository,
+            appLanguageManager = FakeAppLanguageManager(selectedLanguageCode = "ru"),
+        )
+
+        try {
+            advanceUntilIdle()
+
+            val state = viewModel.state.value
+            assertEquals(10, state.languages.size)
+            assertEquals("ru", state.selectedLanguage.code)
+            assertTrue(state.languages.any { language -> language.code == "de" })
+            assertTrue(state.products.all { product -> product.title.startsWith("[RU]") })
+        } finally {
+            viewModel.clear()
+        }
+    }
+
+    @Test
+    fun shouldLoadMoreUsingServerPagination() = runTest {
         val viewModel = createViewModel(
             repository = FakeProductRepository(),
         )
 
         try {
             advanceUntilIdle()
-
-            assertEquals(20, viewModel.state.value.visibleProducts.size)
-
-            viewModel.loadMore()
-            advanceUntilIdle()
-
-            val state = viewModel.state.value
-            assertEquals(40, state.visibleProducts.size)
-            assertTrue(state.canLoadMore)
+            assertEquals(20, viewModel.state.value.products.size)
 
             viewModel.loadMore()
             advanceUntilIdle()
 
-            assertEquals(45, viewModel.state.value.visibleProducts.size)
+            assertEquals(40, viewModel.state.value.products.size)
+            assertEquals(2, viewModel.state.value.currentPage)
+            assertTrue(viewModel.state.value.canLoadMore)
+
+            viewModel.loadMore()
+            advanceUntilIdle()
+
+            assertEquals(45, viewModel.state.value.products.size)
+            assertEquals(3, viewModel.state.value.currentPage)
             assertFalse(viewModel.state.value.canLoadMore)
         } finally {
             viewModel.clear()
@@ -184,7 +218,7 @@ internal class ProductCatalogViewModelTest {
     }
 
     @Test
-    fun shouldResetFilters() = runTest {
+    fun shouldResetSearchCategoryAndSortWithoutResettingLanguage() = runTest {
         val viewModel = createViewModel(
             repository = FakeProductRepository(),
         )
@@ -192,6 +226,8 @@ internal class ProductCatalogViewModelTest {
         try {
             advanceUntilIdle()
 
+            viewModel.onLanguageSelected(russianLanguage())
+            advanceUntilIdle()
             viewModel.onCategorySelected(beautyCategory())
             viewModel.onSearchQueryChanged("serum")
             viewModel.onSortOptionSelected(SortOption.RATING_DESC)
@@ -206,55 +242,35 @@ internal class ProductCatalogViewModelTest {
             assertEquals("", state.searchQuery)
             assertEquals(ProductCategory.ALL, state.selectedCategory)
             assertEquals(SortOption.PRICE_ASC, state.selectedSortOption)
-            assertEquals(20, state.visibleProducts.size)
-            assertTrue(state.canLoadMore)
+            assertEquals("ru", state.selectedLanguage.code)
+            assertEquals(20, state.products.size)
         } finally {
             viewModel.clear()
         }
     }
 
     @Test
-    fun shouldExposeErrorStateWhenRepositoryFails() = runTest {
-        val viewModel = createViewModel(
-            repository = FakeProductRepository(
-                productsError = IllegalStateException("No internet connection"),
-            ),
-        )
-
-        try {
-            advanceUntilIdle()
-
-            val state = viewModel.state.value
-            assertFalse(state.isLoading)
-            assertEquals("No internet connection", state.errorMessage)
-            assertTrue(state.visibleProducts.isEmpty())
-            assertFalse(state.canLoadMore)
-        } finally {
-            viewModel.clear()
-        }
-    }
-
-    @Test
-    fun shouldRetryLoadAfterFailure() = runTest {
-        val repository = RetryableFakeProductRepository(
-            initialProductsError = IllegalStateException("Request failed"),
-        )
+    fun shouldRetryAfterCatalogFailure() = runTest {
+        val repository = FakeProductRepository()
+        repository.catalogError = IllegalStateException("Backend unavailable")
         val viewModel = createViewModel(
             repository = repository,
         )
 
         try {
             advanceUntilIdle()
-            assertEquals("Request failed", viewModel.state.value.errorMessage)
 
-            repository.productsError = null
+            assertEquals("Backend unavailable", viewModel.state.value.errorMessage)
+            assertTrue(viewModel.state.value.products.isEmpty())
+
+            repository.catalogError = null
             viewModel.retryLoad()
             advanceUntilIdle()
 
             val state = viewModel.state.value
             assertNull(state.errorMessage)
-            assertEquals(45, state.products.size)
-            assertEquals(20, state.visibleProducts.size)
+            assertEquals(20, state.products.size)
+            assertEquals(45, state.totalProducts)
         } finally {
             viewModel.clear()
         }
@@ -262,50 +278,136 @@ internal class ProductCatalogViewModelTest {
 
     private fun TestScope.createViewModel(
         repository: ProductRepository,
+        appLanguageManager: AppLanguageManager = FakeAppLanguageManager(),
     ): ProductCatalogViewModel {
         val dispatcher = StandardTestDispatcher(testScheduler)
 
         return ProductCatalogViewModel(
             productRepository = repository,
-            searchProductsUseCase = SearchProductsUseCase(),
+            appLanguageManager = appLanguageManager,
             dispatcher = dispatcher,
         )
     }
 
-    private open class FakeProductRepository(
-        private val products: List<Product> = sampleProducts(),
-        private val categories: List<ProductCategory> = sampleCategories(),
-        private val categoriesError: Throwable? = null,
-        protected open var productsError: Throwable? = null,
-    ) : ProductRepository {
-        override suspend fun getProducts(
-            page: Int,
-            pageSize: Int,
-        ): List<Product> {
-            productsError?.let { throwable -> throw throwable }
+    private class FakeProductRepository : ProductRepository {
+        val catalogRequests: MutableList<ProductCatalogQuery> = mutableListOf()
+        var catalogError: Throwable? = null
+        var languagesError: Throwable? = null
 
-            return products
-                .drop(page * pageSize)
-                .take(pageSize)
+        override suspend fun getLanguages(): List<CatalogLanguage> {
+            languagesError?.let { throwable -> throw throwable }
+            return listOf(
+                CatalogLanguage.ENGLISH,
+                russianLanguage(),
+            )
         }
 
-        override suspend fun getCategories(): List<ProductCategory> {
-            categoriesError?.let { throwable -> throw throwable }
-            return categories
+        override suspend fun getCurrencies(): List<CurrencyOption> = listOf(
+            CurrencyOption.USD,
+            euroCurrency(),
+        )
+
+        override suspend fun getCatalog(
+            query: ProductCatalogQuery,
+        ): ProductCatalogPage {
+            catalogError?.let { throwable -> throw throwable }
+            catalogRequests += query
+
+            val normalizedQuery = query.searchQuery.trim().lowercase()
+            val localizedProducts = sampleProducts().map { product ->
+                localizeProduct(product, query.languageCode, query.currencyCode)
+            }
+            val filteredProducts = localizedProducts
+                .filter { product ->
+                    normalizedQuery.isBlank() ||
+                        product.title.lowercase().contains(normalizedQuery) ||
+                        product.description.lowercase().contains(normalizedQuery)
+                }
+                .filter { product ->
+                    query.categorySlug == null || product.category.slug == query.categorySlug
+                }
+                .sortedWith(sortComparator(query.sortOption))
+
+            val fromIndex = ((query.page - 1) * query.pageSize).coerceAtLeast(0)
+            val pagedProducts = filteredProducts.drop(fromIndex).take(query.pageSize)
+            val totalProducts = filteredProducts.size
+            val totalPages = if (totalProducts == 0) {
+                0
+            } else {
+                (totalProducts + query.pageSize - 1) / query.pageSize
+            }
+
+            return ProductCatalogPage(
+                language = when (query.languageCode) {
+                    "ru" -> russianLanguage()
+                    else -> CatalogLanguage.ENGLISH
+                },
+                categories = sampleCategories(),
+                products = pagedProducts,
+                totalProducts = totalProducts,
+                currentPage = query.page,
+                pageSize = query.pageSize,
+                totalPages = totalPages,
+            )
+        }
+
+        private fun localizeProduct(
+            product: Product,
+            languageCode: String,
+            currencyCode: String,
+        ): Product {
+            return product.copy(
+                title = if (languageCode == CatalogLanguage.ENGLISH.code) {
+                    product.title
+                } else {
+                    "[${languageCode.uppercase()}] ${product.title}"
+                },
+                description = if (languageCode == CatalogLanguage.ENGLISH.code) {
+                    product.description
+                } else {
+                    "[${languageCode.uppercase()}] ${product.description}"
+                },
+                price = localizePrice(product.price, currencyCode),
+            )
+        }
+
+        private fun sortComparator(sortOption: SortOption): Comparator<Product> = when (sortOption) {
+            SortOption.PRICE_ASC -> compareBy<Product>({ product -> product.price.amount }, Product::title)
+            SortOption.PRICE_DESC -> compareByDescending<Product> { product -> product.price.amount }
+                .thenBy(Product::title)
+            SortOption.RATING_DESC -> compareByDescending<Product> { product -> product.rating }
+                .thenBy(Product::title)
+        }
+
+        private fun localizePrice(
+            price: Money,
+            currencyCode: String,
+        ): Money = when (currencyCode) {
+            "EUR" -> Money(
+                amount = price.amount * EuroRate,
+                currency = euroCurrency(),
+            )
+
+            else -> price.copy(
+                currency = CurrencyOption.USD,
+            )
         }
     }
 
-    private class RetryableFakeProductRepository(
-        initialProductsError: Throwable? = null,
-    ) : FakeProductRepository(
-        productsError = initialProductsError,
-    ) {
-        public override var productsError: Throwable? = initialProductsError
+    private class FakeAppLanguageManager(
+        var selectedLanguageCode: String = CatalogLanguage.ENGLISH.code,
+    ) : AppLanguageManager {
+        override fun getCurrentLanguageCode(): String = selectedLanguageCode
+
+        override fun updateLanguage(languageCode: String) {
+            selectedLanguageCode = languageCode
+        }
+
+        override fun applyCurrentLanguage() = Unit
     }
 
     private companion object {
         private fun sampleCategories(): List<ProductCategory> = listOf(
-            ProductCategory.ALL,
             groceriesCategory(),
             beautyCategory(),
             electronicsCategory(),
@@ -316,11 +418,7 @@ internal class ProductCatalogViewModelTest {
                 add(
                     product(
                         id = "g-$index",
-                        title = if (index == 5) {
-                            "Mint Tea"
-                        } else {
-                            "Groceries Item ${index + 1}"
-                        },
+                        title = if (index == 5) "Mint Tea" else "Groceries Item ${index + 1}",
                         price = index + 1.0,
                         rating = 4.0 + (index % 5) * 0.1,
                         category = groceriesCategory(),
@@ -365,7 +463,10 @@ internal class ProductCatalogViewModelTest {
             id = id,
             title = title,
             description = "$title description",
-            price = price,
+            price = Money(
+                amount = price,
+                currency = CurrencyOption.USD,
+            ),
             imageUrl = "https://example.com/$id.png",
             rating = rating,
             category = category,
@@ -385,5 +486,20 @@ internal class ProductCatalogViewModelTest {
             slug = "electronics",
             title = "Electronics",
         )
+
+        private fun russianLanguage(): CatalogLanguage = CatalogLanguage(
+            code = "ru",
+            name = "Russian",
+            isSourceLanguage = false,
+        )
+
+        private fun euroCurrency(): CurrencyOption = CurrencyOption(
+            code = "EUR",
+            name = "Euro",
+            symbol = "\u20AC",
+            isSourceCurrency = false,
+        )
+
+        private const val EuroRate: Double = 0.91
     }
 }

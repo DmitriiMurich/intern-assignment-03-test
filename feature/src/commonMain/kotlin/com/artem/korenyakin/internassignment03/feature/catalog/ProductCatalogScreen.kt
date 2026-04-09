@@ -59,6 +59,7 @@ import com.artem.korenyakin.internassignment03.feature.catalog.resources.request
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.reset_filters
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.results
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.retry
+import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -85,6 +86,8 @@ fun ProductCatalogScreen(
     ProductCatalogContent(
         state = state,
         onSearchQueryChanged = viewModel::onSearchQueryChanged,
+        onLanguageSelected = viewModel::onLanguageSelected,
+        onCurrencySelected = viewModel::onCurrencySelected,
         onCategorySelected = viewModel::onCategorySelected,
         onSortOptionSelected = viewModel::onSortOptionSelected,
         onLoadMore = viewModel::loadMore,
@@ -99,6 +102,8 @@ fun ProductCatalogScreen(
 internal fun ProductCatalogContent(
     state: ProductCatalogState,
     onSearchQueryChanged: (String) -> Unit,
+    onLanguageSelected: (com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage) -> Unit,
+    onCurrencySelected: (CurrencyOption) -> Unit,
     onCategorySelected: (ProductCategory) -> Unit,
     onSortOptionSelected: (SortOption) -> Unit,
     onLoadMore: () -> Unit,
@@ -115,7 +120,7 @@ internal fun ProductCatalogContent(
 
     LaunchedEffect(
         listState,
-        state.visibleProducts.size,
+        state.products.size,
         state.canLoadMore,
         state.isLoadingMore,
     ) {
@@ -124,7 +129,7 @@ internal fun ProductCatalogContent(
         }
             .map { lastVisibleIndex ->
                 lastVisibleIndex?.let { index ->
-                    index >= state.visibleProducts.lastIndex - LoadMoreThreshold
+                    index >= state.products.lastIndex - LoadMoreThreshold
                 }
             }
             .filterNotNull()
@@ -195,6 +200,8 @@ internal fun ProductCatalogContent(
                     ControlsSection(
                         state = state,
                         onSearchQueryChanged = onSearchQueryChanged,
+                        onLanguageSelected = onLanguageSelected,
+                        onCurrencySelected = onCurrencySelected,
                         onCategorySelected = onCategorySelected,
                         onSortOptionSelected = onSortOptionSelected,
                     )
@@ -213,7 +220,7 @@ internal fun ProductCatalogContent(
                         }
                     }
 
-                    state.visibleProducts.isEmpty() -> {
+                    state.products.isEmpty() -> {
                         item(key = "empty-state") {
                             CatalogFeedbackCard(
                                 label = stringResource(Res.string.no_results_label),
@@ -238,13 +245,13 @@ internal fun ProductCatalogContent(
                             ResultsSummary(
                                 title = stringResource(Res.string.results),
                                 summary = formatResultsSummary(
-                                    visibleCount = state.visibleProducts.size,
-                                    totalCount = state.filteredProducts.size,
+                                    visibleCount = state.products.size,
+                                    totalCount = state.totalProducts,
                                 ),
                             )
                         }
                         items(
-                            items = state.visibleProducts,
+                            items = state.products,
                             key = { product -> product.id },
                         ) { product ->
                             ProductCard(
@@ -328,12 +335,12 @@ private fun heroSubtitle(
 ): String = when {
     state.isLoading -> stringResource(Res.string.hero_loading_subtitle)
     state.errorMessage != null && state.products.isEmpty() -> stringResource(Res.string.hero_error_subtitle)
-    state.filteredProducts.isEmpty() && state.products.isNotEmpty() ->
+    state.products.isEmpty() && state.totalProducts == 0 && hasActiveFilters(state) ->
         stringResource(Res.string.hero_empty_filtered_subtitle)
-    state.filteredProducts.isEmpty() -> stringResource(Res.string.hero_empty_subtitle)
+    state.products.isEmpty() -> stringResource(Res.string.hero_empty_subtitle)
     else -> formatHeroResultsSubtitle(
-        visibleCount = state.visibleProducts.size,
-        totalCount = state.filteredProducts.size,
+        visibleCount = state.products.size,
+        totalCount = state.totalProducts,
     )
 }
 
@@ -345,7 +352,15 @@ private fun errorSubtitle(
     GenericLoadErrorToken,
     -> genericLoadError()
 
+    ServerConnectionErrorToken -> serverConnectionError()
+
     else -> errorMessage
 }
 
 private const val LoadMoreThreshold: Int = 2
+
+private fun hasActiveFilters(
+    state: ProductCatalogState,
+): Boolean = state.searchQuery.isNotBlank() ||
+    state.selectedCategory != ProductCategory.ALL ||
+    state.selectedSortOption != SortOption.PRICE_ASC
