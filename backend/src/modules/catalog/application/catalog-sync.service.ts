@@ -1,7 +1,7 @@
-import { CatalogRepository } from "../infrastructure/catalog.repository.js";
-import { DummyJsonClient } from "../infrastructure/dummy-json.client.js";
-import { humanizeCategorySlug } from "../../../shared/utils/text.js";
-import type { SourceCategory } from "../domain/catalog.types.js";
+import { CatalogRepository } from "../infrastructure/catalog.repository";
+import { DummyJsonClient } from "../infrastructure/dummy-json.client";
+import { humanizeCategorySlug } from "../../../shared/utils/text";
+import type { SourceCategory } from "../domain/catalog.types";
 
 export class CatalogSyncService {
   constructor(

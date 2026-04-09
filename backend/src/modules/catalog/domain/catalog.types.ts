@@ -1,4 +1,5 @@
-import type { SupportedLanguageCode } from "../../../shared/constants/languages.js";
+import type { SupportedLanguageCode } from "../../../shared/constants/languages";
+import type { SupportedCurrencyCode } from "../../../shared/constants/currencies";
 
 export const sortOptions = [
   "price_asc",
@@ -10,6 +11,7 @@ export type CatalogSortOption = (typeof sortOptions)[number];
 
 export interface CatalogListParams {
   languageCode: SupportedLanguageCode;
+  currencyCode: SupportedCurrencyCode;
   page: number;
   pageSize: number;
   query: string;
@@ -41,7 +43,10 @@ export interface LocalizedProduct {
   id: string;
   title: string;
   description: string;
-  price: number;
+  price: {
+    amount: number;
+    currency: SupportedCurrencyCode;
+  };
   rating: number;
   imageUrl: string;
   category: LocalizedCategory;
@@ -49,6 +54,7 @@ export interface LocalizedProduct {
 
 export interface LocalizedCatalog {
   language: SupportedLanguageCode;
+  currency: SupportedCurrencyCode;
   categories: LocalizedCategory[];
   products: LocalizedProduct[];
   totalProducts: number;

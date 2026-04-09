@@ -1,6 +1,10 @@
-import { sourceLanguageCode, supportedLanguageCodes } from "../../../shared/constants/languages.js";
-import { sortOptions } from "../domain/catalog.types.js";
-import { errorResponseSchema } from "../../../shared/http/schemas/common.schemas.js";
+import { sourceLanguageCode, supportedLanguageCodes } from "../../../shared/constants/languages";
+import {
+  sourceCurrencyCode,
+  supportedCurrencyCodes,
+} from "../../../shared/constants/currencies";
+import { sortOptions } from "../domain/catalog.types";
+import { errorResponseSchema } from "../../../shared/http/schemas/common.schemas";
 
 const languageCodeSchema = {
   type: "string",
@@ -17,6 +21,21 @@ const categorySchema = {
   },
 } as const;
 
+const currencyCodeSchema = {
+  type: "string",
+  enum: [...supportedCurrencyCodes],
+} as const;
+
+const moneySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["amount", "currency"],
+  properties: {
+    amount: { type: "number" },
+    currency: currencyCodeSchema,
+  },
+} as const;
+
 const productSchema = {
   type: "object",
   additionalProperties: false,
@@ -25,7 +44,7 @@ const productSchema = {
     id: { type: "string" },
     title: { type: "string" },
     description: { type: "string" },
-    price: { type: "number" },
+    price: moneySchema,
     rating: { type: "number" },
     imageUrl: { type: "string" },
     category: categorySchema,
@@ -65,11 +84,40 @@ export const getLanguagesSchema = {
   },
 } as const;
 
+export const getCurrenciesSchema = {
+  tags: ["Catalog"],
+  summary: "List supported catalog currencies",
+  description: "Returns the fixed set of currencies accepted by the catalog API.",
+  response: {
+    200: {
+      type: "object",
+      additionalProperties: false,
+      required: ["items"],
+      properties: {
+        items: {
+          type: "array",
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["code", "name", "symbol", "isSourceCurrency"],
+            properties: {
+              code: currencyCodeSchema,
+              name: { type: "string" },
+              symbol: { type: "string" },
+              isSourceCurrency: { type: "boolean" },
+            },
+          },
+        },
+      },
+    },
+  },
+} as const;
+
 export const getCatalogSchema = {
   tags: ["Catalog"],
   summary: "Get localized catalog",
   description:
-    "Returns a server-paginated localized catalog. English source data is fetched automatically if the database is empty. Non-English responses use cached Yandex Translate results or create them on demand.",
+    "Returns a server-paginated localized catalog. English source data is synchronized in the background at startup and then refreshed every hour. Non-English responses use cached LibreTranslate results or create them on demand.",
   querystring: {
     type: "object",
     additionalProperties: false,
@@ -78,6 +126,11 @@ export const getCatalogSchema = {
         ...languageCodeSchema,
         default: sourceLanguageCode,
         description: "Language code for localized catalog content.",
+      },
+      currency: {
+        ...currencyCodeSchema,
+        default: sourceCurrencyCode,
+        description: "Currency code for converted product prices.",
       },
       page: {
         type: "integer",
@@ -115,9 +168,10 @@ export const getCatalogSchema = {
     200: {
       type: "object",
       additionalProperties: false,
-      required: ["language", "categories", "items", "meta"],
+      required: ["language", "currency", "categories", "items", "meta"],
       properties: {
         language: languageCodeSchema,
+        currency: currencyCodeSchema,
         categories: {
           type: "array",
           items: categorySchema,
@@ -139,7 +193,9 @@ export const getCatalogSchema = {
             "category",
             "sort",
             "sourceLanguage",
+            "sourceCurrency",
             "translationProvider",
+            "exchangeRateProvider",
           ],
           properties: {
             totalProducts: { type: "integer" },
@@ -156,9 +212,16 @@ export const getCatalogSchema = {
             },
             sort: sortSchema,
             sourceLanguage: { type: "string", enum: [sourceLanguageCode] },
+            sourceCurrency: { type: "string", enum: [sourceCurrencyCode] },
             translationProvider: {
               anyOf: [
-                { type: "string", enum: ["yandex"] },
+                { type: "string", enum: ["libretranslate"] },
+                { type: "null" },
+              ],
+            },
+            exchangeRateProvider: {
+              anyOf: [
+                { type: "string", enum: ["frankfurter"] },
                 { type: "null" },
               ],
             },
@@ -169,35 +232,6 @@ export const getCatalogSchema = {
     400: errorResponseSchema,
     502: errorResponseSchema,
     503: errorResponseSchema,
-    500: errorResponseSchema,
-  },
-} as const;
-
-export const syncCatalogSchema = {
-  tags: ["Catalog"],
-  summary: "Force source catalog synchronization",
-  description:
-    "Refreshes English source data from DummyJSON and clears cached translations so they can be regenerated on the next localized request.",
-  response: {
-    200: {
-      type: "object",
-      additionalProperties: false,
-      required: [
-        "status",
-        "sourceLanguage",
-        "invalidatedTranslations",
-        "syncedProducts",
-        "syncedCategories",
-      ],
-      properties: {
-        status: { type: "string", enum: ["ok"] },
-        sourceLanguage: { type: "string", enum: [sourceLanguageCode] },
-        invalidatedTranslations: { type: "boolean", enum: [true] },
-        syncedProducts: { type: "integer" },
-        syncedCategories: { type: "integer" },
-      },
-    },
-    502: errorResponseSchema,
     500: errorResponseSchema,
   },
 } as const;

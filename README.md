@@ -253,7 +253,7 @@ intern-assignment-03/
 
 ```text
 mobile app -> backend -> DummyJSON
-                     -> Yandex Translate
+                     -> LibreTranslate
                      -> PostgreSQL
 ```
 
@@ -261,12 +261,12 @@ Backend:
 
 - загружает source-каталог из `DummyJSON`;
 - хранит исходные данные на английском в `PostgreSQL`;
-- при запросе не-английского языка переводит `title`, `description` и названия категорий через `Yandex Translate`;
+- при запросе не-английского языка переводит `title`, `description` и названия категорий через `LibreTranslate`;
 - сохраняет переводы в БД;
 - отдает клиенту уже локализованный список товаров;
 - сам применяет `query`, `category`, `sort`, `page`, `pageSize`.
 
-Если source-каталог еще не загружен, backend подтянет его автоматически при первом запросе к каталогу.
+При старте backend делает первичную фоновую синхронизацию source-каталога из `DummyJSON`, а затем обновляет его каждый час.
 
 ### Эндпоинты backend
 
@@ -298,11 +298,6 @@ Backend:
 GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&sort=price_asc
 ```
 
-`POST /api/v1/catalog/sync`
-
-- принудительно обновляет source-каталог из `DummyJSON`
-- сбрасывает кеш переводов
-
 ### Поддерживаемые языки
 
 Список языков сейчас фиксирован в коде backend-а:
@@ -328,9 +323,7 @@ GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&
 - `PORT` — порт backend
 - `DATABASE_URL` — строка подключения к `PostgreSQL`
 - `DUMMYJSON_BASE_URL` — базовый URL `DummyJSON`
-- `YANDEX_TRANSLATE_API_URL` — URL REST-метода `Yandex Translate`
-- `YANDEX_TRANSLATE_API_KEY` — API key для `Yandex Translate`
-- `YANDEX_FOLDER_ID` — folder ID в `Yandex Cloud`
+- `LIBRETRANSLATE_URL` — базовый URL сервиса `LibreTranslate`
 
 Пример:
 
@@ -339,29 +332,12 @@ HOST=0.0.0.0
 PORT=8080
 DATABASE_URL=postgresql://catalog:catalog@localhost:5432/catalog
 DUMMYJSON_BASE_URL=https://dummyjson.com
-YANDEX_TRANSLATE_API_URL=https://translate.api.cloud.yandex.net/translate/v2/translate
-YANDEX_TRANSLATE_API_KEY=<your-api-key>
-YANDEX_FOLDER_ID=<your-folder-id>
+LIBRETRANSLATE_URL=http://libretranslate:5000
 ```
 
-### Откуда взять Yandex Cloud параметры
+### Откуда берется LibreTranslate
 
-Для `YANDEX_TRANSLATE_API_KEY` и `YANDEX_FOLDER_ID` нужны ресурсы в `Yandex Cloud`.
-
-Что нужно сделать:
-
-1. Создать или выбрать cloud и folder.
-2. Включить `Translate API`.
-3. Создать сервисный аккаунт.
-4. Выдать ему права на работу с `Translate API`.
-5. Создать `API key`.
-6. Скопировать `folder ID`.
-
-Официальные ссылки:
-
-- Translate overview: https://yandex.cloud/en/docs/translate/
-- REST reference: https://yandex.cloud/en/docs/translate/api-ref/Translation/translate
-- Access via API key: https://yandex.cloud/en/docs/translate/operations/sa-api-key
+Для локального запуска отдельные ключи не нужны: `docker-compose.yml` поднимает контейнер `libretranslate` рядом с backend и PostgreSQL.
 
 ### Как запустить backend
 

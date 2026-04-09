@@ -8,7 +8,7 @@
 
 - забирает source-данные из `DummyJSON`;
 - хранит английскую версию каталога в `PostgreSQL`;
-- переводит названия, описания и названия категорий через `Yandex Translate`;
+- переводит названия, описания и названия категорий через `LibreTranslate`;
 - кеширует переводы по языкам в базе;
 - отдает мобильному приложению уже локализованный и серверно-пагинируемый каталог.
 
@@ -16,17 +16,17 @@
 
 ```text
 mobile app -> backend -> DummyJSON
-                     -> Yandex Translate
+                     -> LibreTranslate
                      -> PostgreSQL
 ```
 
 ## Как это работает
 
 1. Клиент вызывает `GET /api/v1/catalog`.
-2. Если source-каталог еще не загружен, backend автоматически забирает его из `DummyJSON`.
+2. При старте backend выполняет фоновую синхронизацию source-каталога из `DummyJSON`, а затем повторяет её каждый час.
 3. Если запрошен язык `en`, backend отдает данные из source-таблиц.
 4. Если запрошен другой язык, backend проверяет кеш переводов в `PostgreSQL`.
-5. Для отсутствующих переводов backend вызывает `Yandex Translate`, сохраняет результат в БД и только потом формирует ответ.
+5. Для отсутствующих переводов backend вызывает `LibreTranslate`, сохраняет результат в БД и только потом формирует ответ.
 6. Поиск, фильтрация, сортировка и пагинация выполняются на сервере.
 
 ## Эндпоинты
@@ -103,12 +103,6 @@ GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&
 - `meta.sourceLanguage`
 - `meta.translationProvider`
 
-### `POST /api/v1/catalog/sync`
-
-Принудительно обновляет source-каталог из `DummyJSON` и сбрасывает кеш переводов.
-
-Это полезно, если нужно заново подтянуть каталог и пересоздать переводы на следующих запросах.
-
 ## Swagger
 
 Swagger UI доступен по адресу:
@@ -133,9 +127,7 @@ http://localhost:8080/docs
 - `PORT` — порт backend. По умолчанию используется `8080`.
 - `DATABASE_URL` — строка подключения к `PostgreSQL`.
 - `DUMMYJSON_BASE_URL` — базовый URL внешнего каталога. Обычно оставляется `https://dummyjson.com`.
-- `YANDEX_TRANSLATE_API_URL` — URL REST-метода перевода Yandex Translate. Обычно менять не нужно.
-- `YANDEX_TRANSLATE_API_KEY` — API key для вызова Yandex Translate.
-- `YANDEX_FOLDER_ID` — идентификатор folder в Yandex Cloud, от имени которого вызывается Translate API.
+- `LIBRETRANSLATE_URL` — базовый URL сервиса `LibreTranslate`.
 
 Пример:
 
@@ -144,39 +136,10 @@ HOST=0.0.0.0
 PORT=8080
 DATABASE_URL=postgresql://catalog:catalog@localhost:5432/catalog
 DUMMYJSON_BASE_URL=https://dummyjson.com
-YANDEX_TRANSLATE_API_URL=https://translate.api.cloud.yandex.net/translate/v2/translate
-YANDEX_TRANSLATE_API_KEY=<your-api-key>
-YANDEX_FOLDER_ID=<your-folder-id>
+LIBRETRANSLATE_URL=http://libretranslate:5000
 ```
 
-## Откуда взять `YANDEX_TRANSLATE_API_KEY` и `YANDEX_FOLDER_ID`
-
-### `YANDEX_TRANSLATE_API_KEY`
-
-Нужен API key для сервисного аккаунта или другого поддерживаемого способа доступа в Yandex Cloud.
-
-Официальные ссылки:
-
-- Настройка доступа по API key: https://yandex.cloud/en/docs/translate/operations/sa-api-key
-- REST API Translate: https://yandex.cloud/en/docs/translate/api-ref/Translation/translate
-
-### `YANDEX_FOLDER_ID`
-
-Это идентификатор folder в Yandex Cloud, внутри которого включен сервис перевода.
-
-Официальные ссылки:
-
-- Как работать с Translate: https://yandex.cloud/en/docs/translate/operations/
-- REST API Translate: https://yandex.cloud/en/docs/translate/api-ref/Translation/translate
-
-На практике это выглядит так:
-
-1. Войти в Yandex Cloud.
-2. Выбрать cloud и folder.
-3. Включить `Translate API`.
-4. Создать сервисный аккаунт и выдать ему нужные права.
-5. Выпустить API key.
-6. Скопировать `folder ID` из консоли Yandex Cloud.
+`docker-compose.yml` уже поднимает контейнер `libretranslate`, поэтому для локального запуска отдельные ключи не нужны.
 
 ## Локальный запуск
 
@@ -191,6 +154,7 @@ docker compose up --build
 После этого будут подняты:
 
 - `postgres`
+- `libretranslate`
 - `backend`
 
 Backend будет доступен на:
@@ -213,13 +177,19 @@ docker compose up -d postgres
 cd backend
 ```
 
-3. Установи зависимости:
+3. Подними `postgres` и `libretranslate`:
+
+```bash
+docker compose up -d postgres libretranslate
+```
+
+4. Установи зависимости:
 
 ```bash
 npm install
 ```
 
-4. Запусти dev-сервер:
+5. Запусти dev-сервер:
 
 ```bash
 npm run dev
@@ -249,5 +219,5 @@ npm run start
 ## Полезные ссылки
 
 - DummyJSON docs: https://dummyjson.com/docs/products
-- Yandex Translate docs overview: https://yandex.cloud/en/docs/translate/
-- Yandex Translate REST reference: https://yandex.cloud/en/docs/translate/api-ref
+- LibreTranslate docs: https://docs.libretranslate.com/
+- LibreTranslate repository: https://github.com/LibreTranslate/LibreTranslate

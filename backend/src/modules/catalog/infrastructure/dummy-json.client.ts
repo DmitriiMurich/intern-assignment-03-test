@@ -1,6 +1,6 @@
-import { AppError } from "../../../shared/errors/app-error.js";
-import { humanizeCategorySlug } from "../../../shared/utils/text.js";
-import type { SourceCategory, SourceProduct } from "../domain/catalog.types.js";
+import { AppError } from "../../../shared/errors/app-error";
+import { humanizeCategorySlug } from "../../../shared/utils/text";
+import type { SourceCategory, SourceProduct } from "../domain/catalog.types";
 
 interface DummyJsonProductDto {
   id: number;

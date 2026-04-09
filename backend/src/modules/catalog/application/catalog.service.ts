@@ -1,34 +1,32 @@
 import {
   sourceLanguageCode,
   type SupportedLanguageCode,
-} from "../../../shared/constants/languages.js";
-import type { CatalogListParams } from "../domain/catalog.types.js";
-import { YandexTranslateClient } from "../infrastructure/yandex-translate.client.js";
-import { CatalogRepository } from "../infrastructure/catalog.repository.js";
-import { CatalogSyncService } from "./catalog-sync.service.js";
+} from "../../../shared/constants/languages";
+import { AppError } from "../../../shared/errors/app-error";
+import type { CatalogListParams } from "../domain/catalog.types";
+import { LibreTranslateClient } from "../infrastructure/libre-translate.client";
+import { CatalogRepository } from "../infrastructure/catalog.repository";
+import { CurrencyRateService } from "./currency-rate.service";
 
-const translationProvider = "yandex";
+const translationProvider = "libretranslate";
 
 export class CatalogService {
   constructor(
     private readonly catalogRepository: CatalogRepository,
-    private readonly catalogSyncService: CatalogSyncService,
-    private readonly yandexTranslateClient: YandexTranslateClient,
+    private readonly libreTranslateClient: LibreTranslateClient,
+    private readonly currencyRateService: CurrencyRateService,
   ) {}
 
   async getCatalog(params: CatalogListParams) {
-    await this.catalogSyncService.ensureSourceCatalog();
+    await this.ensureSourceCatalogAvailable();
 
     if (params.languageCode !== sourceLanguageCode) {
       await this.ensureCategoryTranslations(params.languageCode);
       await this.ensureProductTranslations(params.languageCode);
     }
 
-    return this.catalogRepository.getLocalizedCatalog(params);
-  }
-
-  async syncCatalog() {
-    return this.catalogSyncService.refreshSourceCatalog();
+    const localizedCatalog = await this.catalogRepository.getLocalizedCatalog(params);
+    return this.currencyRateService.convertCatalog(localizedCatalog, params.currencyCode);
   }
 
   private async ensureProductTranslations(languageCode: SupportedLanguageCode): Promise<void> {
@@ -38,11 +36,11 @@ export class CatalogService {
       return;
     }
 
-    const translatedTitles = await this.yandexTranslateClient.translateTexts(
+    const translatedTitles = await this.libreTranslateClient.translateTexts(
       missingTranslations.map((translation) => translation.sourceTitle),
       languageCode,
     );
-    const translatedDescriptions = await this.yandexTranslateClient.translateTexts(
+    const translatedDescriptions = await this.libreTranslateClient.translateTexts(
       missingTranslations.map((translation) => translation.sourceDescription),
       languageCode,
     );
@@ -65,7 +63,7 @@ export class CatalogService {
       return;
     }
 
-    const translatedTitles = await this.yandexTranslateClient.translateTexts(
+    const translatedTitles = await this.libreTranslateClient.translateTexts(
       missingTranslations.map((translation) => translation.sourceTitle),
       languageCode,
     );
@@ -77,6 +75,20 @@ export class CatalogService {
         title: translatedTitles[index] ?? translation.sourceTitle,
       })),
       translationProvider,
+    );
+  }
+
+  private async ensureSourceCatalogAvailable(): Promise<void> {
+    const productsCount = await this.catalogRepository.countProducts();
+
+    if (productsCount > 0) {
+      return;
+    }
+
+    throw new AppError(
+      503,
+      "SOURCE_CATALOG_UNAVAILABLE",
+      "Source catalog is not available yet. Background synchronization is still in progress.",
     );
   }
 }

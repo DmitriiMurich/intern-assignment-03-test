@@ -32,10 +32,6 @@ export function isSupportedLanguageCode(value: string): value is SupportedLangua
   return supportedLanguageCodes.includes(value as SupportedLanguageCode);
 }
 
-export function toYandexLanguageCode(languageCode: SupportedLanguageCode): string {
-  return languageCode;
-}
-
 export function languageDisplayName(languageCode: SupportedLanguageCode): string {
   return languageNameMap[languageCode];
 }

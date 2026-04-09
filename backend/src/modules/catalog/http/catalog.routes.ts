@@ -1,20 +1,29 @@
 import type { FastifyInstance } from "fastify";
 import {
+  currencyDisplayName,
+  currencySymbol,
+  isSourceCurrency,
+  sourceCurrencyCode,
+  supportedCurrencyCodes,
+} from "../../../shared/constants/currencies";
+import {
   languageDisplayName,
   sourceLanguageCode,
   supportedLanguageCodes,
-} from "../../../shared/constants/languages.js";
+} from "../../../shared/constants/languages";
 import type {
+  CurrenciesResponse,
   CatalogQuerystring,
   CatalogResponse,
   LanguagesResponse,
-  SyncCatalogResponse,
-} from "./catalog.contracts.js";
-import { CatalogService } from "../application/catalog.service.js";
-import { getCatalogSchema, getLanguagesSchema, syncCatalogSchema } from "./catalog.schemas.js";
+} from "./catalog.contracts";
+import { CatalogService } from "../application/catalog.service";
+import { CurrencyRateService } from "../application/currency-rate.service";
+import { getCatalogSchema, getCurrenciesSchema, getLanguagesSchema } from "./catalog.schemas";
 
 interface CatalogRoutesOptions {
   catalogService: CatalogService;
+  currencyRateService: CurrencyRateService;
 }
 
 export async function registerCatalogRoutes(
@@ -35,6 +44,21 @@ export async function registerCatalogRoutes(
     }),
   );
 
+  app.get<{ Reply: CurrenciesResponse }>(
+    "/api/v1/currencies",
+    {
+      schema: getCurrenciesSchema,
+    },
+    async () => ({
+      items: supportedCurrencyCodes.map((currencyCode) => ({
+        code: currencyCode,
+        name: currencyDisplayName(currencyCode),
+        symbol: currencySymbol(currencyCode),
+        isSourceCurrency: isSourceCurrency(currencyCode),
+      })),
+    }),
+  );
+
   app.get<{ Querystring: CatalogQuerystring; Reply: CatalogResponse }>(
     "/api/v1/catalog",
     {
@@ -42,6 +66,7 @@ export async function registerCatalogRoutes(
     },
     async (request) => {
       const requestedLanguage = request.query.lang ?? sourceLanguageCode;
+      const requestedCurrency = request.query.currency ?? sourceCurrencyCode;
       const page = request.query.page ?? 1;
       const pageSize = request.query.pageSize ?? 20;
       const query = request.query.query ?? "";
@@ -49,6 +74,7 @@ export async function registerCatalogRoutes(
       const sort = request.query.sort ?? "price_asc";
       const catalog = await options.catalogService.getCatalog({
         languageCode: requestedLanguage,
+        currencyCode: requestedCurrency,
         page,
         pageSize,
         query,
@@ -58,6 +84,7 @@ export async function registerCatalogRoutes(
 
       return {
         language: catalog.language,
+        currency: catalog.currency,
         categories: catalog.categories,
         items: catalog.products,
         meta: {
@@ -70,26 +97,10 @@ export async function registerCatalogRoutes(
           category: catalog.categorySlug,
           sort: catalog.sort,
           sourceLanguage: sourceLanguageCode,
-          translationProvider: requestedLanguage === sourceLanguageCode ? null : "yandex",
+          sourceCurrency: sourceCurrencyCode,
+          translationProvider: requestedLanguage === sourceLanguageCode ? null : "libretranslate",
+          exchangeRateProvider: requestedCurrency === sourceCurrencyCode ? null : "frankfurter",
         },
-      };
-    },
-  );
-
-  app.post<{ Reply: SyncCatalogResponse }>(
-    "/api/v1/catalog/sync",
-    {
-      schema: syncCatalogSchema,
-    },
-    async () => {
-      const syncResult = await options.catalogService.syncCatalog();
-
-      return {
-        status: "ok",
-        sourceLanguage: sourceLanguageCode,
-        invalidatedTranslations: true,
-        syncedProducts: syncResult.products,
-        syncedCategories: syncResult.categories,
       };
     },
   );

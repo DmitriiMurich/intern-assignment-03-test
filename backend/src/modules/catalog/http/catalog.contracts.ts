@@ -1,8 +1,10 @@
-import type { SupportedLanguageCode } from "../../../shared/constants/languages.js";
-import type { CatalogSortOption } from "../domain/catalog.types.js";
+import type { SupportedLanguageCode } from "../../../shared/constants/languages";
+import type { SupportedCurrencyCode } from "../../../shared/constants/currencies";
+import type { CatalogSortOption } from "../domain/catalog.types";
 
 export interface CatalogQuerystring {
   lang?: SupportedLanguageCode;
+  currency?: SupportedCurrencyCode;
   page?: number;
   pageSize?: number;
   query?: string;
@@ -26,6 +28,17 @@ export interface LanguagesResponse {
   items: LanguageItemResponse[];
 }
 
+export interface CurrencyItemResponse {
+  code: SupportedCurrencyCode;
+  name: string;
+  symbol: string;
+  isSourceCurrency: boolean;
+}
+
+export interface CurrenciesResponse {
+  items: CurrencyItemResponse[];
+}
+
 export interface CatalogCategoryResponse {
   slug: string;
   title: string;
@@ -35,7 +48,10 @@ export interface CatalogProductResponse {
   id: string;
   title: string;
   description: string;
-  price: number;
+  price: {
+    amount: number;
+    currency: SupportedCurrencyCode;
+  };
   rating: number;
   imageUrl: string;
   category: CatalogCategoryResponse;
@@ -43,6 +59,7 @@ export interface CatalogProductResponse {
 
 export interface CatalogResponse {
   language: SupportedLanguageCode;
+  currency: SupportedCurrencyCode;
   categories: CatalogCategoryResponse[];
   items: CatalogProductResponse[];
   meta: {
@@ -55,14 +72,8 @@ export interface CatalogResponse {
     category: string | null;
     sort: CatalogSortOption;
     sourceLanguage: "en";
-    translationProvider: "yandex" | null;
+    sourceCurrency: "USD";
+    translationProvider: "libretranslate" | null;
+    exchangeRateProvider: "frankfurter" | null;
   };
-}
-
-export interface SyncCatalogResponse {
-  status: "ok";
-  sourceLanguage: "en";
-  invalidatedTranslations: true;
-  syncedProducts: number;
-  syncedCategories: number;
 }

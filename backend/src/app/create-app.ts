@@ -1,22 +1,22 @@
 import Fastify from "fastify";
 import type { FastifyError } from "fastify";
 import type { Pool } from "pg";
-import { AppError } from "../shared/errors/app-error.js";
-import { healthResponseSchema } from "../shared/http/schemas/common.schemas.js";
-import { registerSwagger } from "./register-swagger.js";
-import { CatalogRepository } from "../modules/catalog/infrastructure/catalog.repository.js";
-import { DummyJsonClient } from "../modules/catalog/infrastructure/dummy-json.client.js";
-import { YandexTranslateClient } from "../modules/catalog/infrastructure/yandex-translate.client.js";
-import { CatalogSyncService } from "../modules/catalog/application/catalog-sync.service.js";
-import { CatalogService } from "../modules/catalog/application/catalog.service.js";
-import { registerCatalogRoutes } from "../modules/catalog/http/catalog.routes.js";
+import { AppError } from "../shared/errors/app-error";
+import { healthResponseSchema } from "../shared/http/schemas/common.schemas";
+import { registerSwagger } from "./register-swagger";
+import { CatalogRepository } from "../modules/catalog/infrastructure/catalog.repository";
+import { DummyJsonClient } from "../modules/catalog/infrastructure/dummy-json.client";
+import { LibreTranslateClient } from "../modules/catalog/infrastructure/libre-translate.client";
+import { CatalogSyncService } from "../modules/catalog/application/catalog-sync.service";
+import { CatalogService } from "../modules/catalog/application/catalog.service";
+import { registerCatalogRoutes } from "../modules/catalog/http/catalog.routes";
+import { FrankfurterClient } from "../modules/catalog/infrastructure/frankfurter.client";
+import { CurrencyRateService } from "../modules/catalog/application/currency-rate.service";
 
 interface CreateAppOptions {
   pool: Pool;
   dummyJsonBaseUrl: string;
-  yandexTranslateApiUrl: string;
-  yandexTranslateApiKey: string;
-  yandexFolderId: string;
+  libreTranslateUrl: string;
 }
 
 export async function createApp(options: CreateAppOptions) {
@@ -28,19 +28,22 @@ export async function createApp(options: CreateAppOptions) {
   const dummyJsonClient = new DummyJsonClient(
     options.dummyJsonBaseUrl,
   );
-  const yandexTranslateClient = new YandexTranslateClient(
-    options.yandexTranslateApiUrl,
-    options.yandexTranslateApiKey,
-    options.yandexFolderId,
+  const libreTranslateClient = new LibreTranslateClient(
+    options.libreTranslateUrl,
   );
+  const frankfurterClient = new FrankfurterClient();
   const catalogSyncService = new CatalogSyncService(
     catalogRepository,
     dummyJsonClient,
   );
+  const currencyRateService = new CurrencyRateService(
+    catalogRepository,
+    frankfurterClient,
+  );
   const catalogService = new CatalogService(
     catalogRepository,
-    catalogSyncService,
-    yandexTranslateClient,
+    libreTranslateClient,
+    currencyRateService,
   );
 
   await registerSwagger(app);
@@ -64,6 +67,7 @@ export async function createApp(options: CreateAppOptions) {
 
   await registerCatalogRoutes(app, {
     catalogService,
+    currencyRateService,
   });
 
   app.setErrorHandler((error, _request, reply) => {
@@ -97,6 +101,8 @@ export async function createApp(options: CreateAppOptions) {
   return {
     app,
     catalogRepository,
+    catalogSyncService,
+    currencyRateService,
   };
 }
 

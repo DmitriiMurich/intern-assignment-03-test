@@ -1,5 +1,6 @@
 import { Pool } from "pg";
-import type { SupportedLanguageCode } from "../../../shared/constants/languages.js";
+import type { SupportedLanguageCode } from "../../../shared/constants/languages";
+import type { SupportedCurrencyCode } from "../../../shared/constants/currencies";
 import type {
   CatalogListParams,
   CatalogSortOption,
@@ -10,7 +11,7 @@ import type {
   MissingProductTranslation,
   SourceCategory,
   SourceProduct,
-} from "../domain/catalog.types.js";
+} from "../domain/catalog.types";
 
 const schemaSql = `
 CREATE TABLE IF NOT EXISTS categories (
@@ -54,9 +55,18 @@ CREATE TABLE IF NOT EXISTS category_translations (
   PRIMARY KEY (category_slug, language_code)
 );
 
+CREATE TABLE IF NOT EXISTS currency_rates (
+  base_currency VARCHAR(16) NOT NULL,
+  currency_code VARCHAR(16) NOT NULL,
+  rate DOUBLE PRECISION NOT NULL,
+  fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (base_currency, currency_code)
+);
+
 CREATE INDEX IF NOT EXISTS idx_products_category_slug ON products(category_slug);
 CREATE INDEX IF NOT EXISTS idx_product_translations_language ON product_translations(language_code);
 CREATE INDEX IF NOT EXISTS idx_category_translations_language ON category_translations(language_code);
+CREATE INDEX IF NOT EXISTS idx_currency_rates_base_currency ON currency_rates(base_currency);
 `;
 
 interface LocalizedProductRow {
@@ -77,6 +87,10 @@ interface LocalizedCategoryRow {
 
 interface CountRow {
   count: string;
+}
+
+interface CurrencyRateRow {
+  rate: number;
 }
 
 interface MissingProductTranslationRow {
@@ -105,6 +119,14 @@ export class CatalogRepository {
 
   async countProducts(): Promise<number> {
     const result = await this.pool.query<CountRow>("SELECT COUNT(*)::text AS count FROM products");
+    return Number(result.rows[0]?.count ?? "0");
+  }
+
+  async countCurrencyRates(baseCurrency: SupportedCurrencyCode): Promise<number> {
+    const result = await this.pool.query<CountRow>(
+      "SELECT COUNT(*)::text AS count FROM currency_rates WHERE base_currency = $1",
+      [baseCurrency],
+    );
     return Number(result.rows[0]?.count ?? "0");
   }
 
@@ -332,6 +354,68 @@ export class CatalogRepository {
     }
   }
 
+  async saveCurrencyRates(
+    baseCurrency: SupportedCurrencyCode,
+    rates: Array<{ currencyCode: SupportedCurrencyCode; rate: number }>,
+  ): Promise<void> {
+    if (rates.length === 0) {
+      return;
+    }
+
+    const client = await this.pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      for (const rate of rates) {
+        await client.query(
+          `
+          INSERT INTO currency_rates (
+            base_currency,
+            currency_code,
+            rate,
+            fetched_at
+          )
+          VALUES ($1, $2, $3, NOW())
+          ON CONFLICT (base_currency, currency_code) DO UPDATE
+          SET rate = EXCLUDED.rate,
+              fetched_at = NOW()
+          `,
+          [baseCurrency, rate.currencyCode, rate.rate],
+        );
+      }
+
+      await client.query(
+        "DELETE FROM currency_rates WHERE base_currency = $1 AND NOT (currency_code = ANY($2::text[]))",
+        [baseCurrency, rates.map((rate) => rate.currencyCode)],
+      );
+
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getCurrencyRate(
+    baseCurrency: SupportedCurrencyCode,
+    currencyCode: SupportedCurrencyCode,
+  ): Promise<number | null> {
+    const result = await this.pool.query<CurrencyRateRow>(
+      `
+      SELECT rate
+      FROM currency_rates
+      WHERE base_currency = $1
+        AND currency_code = $2
+      `,
+      [baseCurrency, currencyCode],
+    );
+
+    return result.rows[0]?.rate ?? null;
+  }
+
   async getLocalizedCatalog(params: CatalogListParams): Promise<LocalizedCatalog> {
     const normalizedQuery = params.query.trim();
     const offset = (params.page - 1) * params.pageSize;
@@ -423,7 +507,10 @@ export class CatalogRepository {
       id: row.id,
       title: row.title,
       description: row.description,
-      price: row.price,
+      price: {
+        amount: row.price,
+        currency: "USD",
+      },
       rating: row.rating,
       imageUrl: row.imageurl,
       category: {
@@ -437,6 +524,7 @@ export class CatalogRepository {
 
     return {
       language: params.languageCode,
+      currency: params.currencyCode,
       categories,
       products,
       totalProducts,

@@ -39,10 +39,5 @@ export const env = {
   port: readNumber("PORT", 8080),
   databaseUrl: readUrl("DATABASE_URL"),
   dummyJsonBaseUrl: readUrl("DUMMYJSON_BASE_URL", "https://dummyjson.com"),
-  yandexTranslateApiUrl: readUrl(
-    "YANDEX_TRANSLATE_API_URL",
-    "https://translate.api.cloud.yandex.net/translate/v2/translate",
-  ),
-  yandexTranslateApiKey: process.env.YANDEX_TRANSLATE_API_KEY?.trim() ?? "",
-  yandexFolderId: process.env.YANDEX_FOLDER_ID?.trim() ?? "",
+  libreTranslateUrl: readUrl("LIBRETRANSLATE_URL", "http://libretranslate:5000"),
 };
