@@ -1,13 +1,16 @@
 package com.artem.korenyakin.internassignment03.model.repository
 
 import com.artem.korenyakin.internassignment03.model.domain.Product
-import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
+import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogPage
+import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogQuery
+import com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage
+import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
 
 interface ProductRepository {
-    suspend fun getProducts(
-        page: Int,
-        pageSize: Int,
-    ): List<Product>
+    suspend fun getLanguages(): List<CatalogLanguage>
+    suspend fun getCurrencies(): List<CurrencyOption>
 
-    suspend fun getCategories(): List<ProductCategory>
+    suspend fun getCatalog(
+        query: ProductCatalogQuery,
+    ): ProductCatalogPage
 }
