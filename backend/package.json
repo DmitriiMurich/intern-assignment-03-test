@@ -10,7 +10,9 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsup --config tsup.config.ts",
     "start": "node dist/server.js",
-    "test": "node --import tsx --test \"src/**/*.test.ts\""
+    "test:unit": "jest --config jest.config.cjs --selectProjects unit --runInBand",
+    "test:integration": "jest --config jest.config.cjs --selectProjects integration --runInBand",
+    "test:all": "npm run test:unit && npm run test:integration"
   },
   "dependencies": {
     "@fastify/swagger": "^9.6.1",
@@ -20,8 +22,11 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.6.0",
     "@types/pg": "^8.15.5",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
     "tsup": "^8.5.1",
     "tsx": "^4.20.3",
     "typescript": "^5.9.3"
