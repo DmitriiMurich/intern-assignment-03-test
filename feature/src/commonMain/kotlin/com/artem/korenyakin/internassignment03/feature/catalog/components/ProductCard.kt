@@ -2,6 +2,7 @@ package com.artem.korenyakin.internassignment03.feature.catalog.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,21 +28,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.artem.korenyakin.internassignment03.feature.catalog.formatPrice
+import com.artem.korenyakin.internassignment03.feature.catalog.formatRatingNumber
 import com.artem.korenyakin.internassignment03.feature.catalog.formatRatingValue
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.Res
 import com.artem.korenyakin.internassignment03.feature.catalog.resources.category
 import com.artem.korenyakin.internassignment03.model.domain.Product
-import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
 
 @Suppress("LongMethod")
 @Composable
 internal fun ProductCard(
     product: Product,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.clickable(onClick = onClick),
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -107,7 +109,7 @@ internal fun ProductCard(
                     ) {
                         ProductPill(text = product.category.title)
                         ProductPill(
-                            text = formatRatingValue(product.rating.toRatingText()),
+                            text = formatRatingValue(formatRatingNumber(product.rating)),
                         )
                     }
                     Row(
@@ -192,9 +194,3 @@ private fun ProductPill(
 
 private const val ProductPillSurfaceAlpha: Float = 0.94f
 private const val ProductPillBorderAlpha: Float = 0.75f
-private const val RatingFractionMultiplier: Double = 10.0
-
-private fun Double.toRatingText(): String {
-    val roundedValue = ((this * RatingFractionMultiplier).roundToInt() / RatingFractionMultiplier)
-    return roundedValue.toString()
-}

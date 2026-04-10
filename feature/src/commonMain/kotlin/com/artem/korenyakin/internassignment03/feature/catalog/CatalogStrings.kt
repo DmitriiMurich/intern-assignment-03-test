@@ -93,6 +93,28 @@ internal fun genericLoadError(): String = stringResource(Res.string.generic_load
 @Composable
 internal fun serverConnectionError(): String = stringResource(Res.string.server_connection_error)
 
+@Composable
+internal fun resolveErrorMessage(
+    errorMessage: String?,
+): String = when (errorMessage) {
+    null,
+    GenericLoadErrorToken,
+    -> genericLoadError()
+
+    ServerConnectionErrorToken -> serverConnectionError()
+    else -> errorMessage
+}
+
+internal fun formatRatingNumber(
+    rating: Double,
+): String = ((rating * RatingFractionMultiplier).roundToInt() / RatingFractionMultiplier).toString()
+
+internal fun formatReviewDate(
+    rawDate: String,
+): String = rawDate.substringBefore("T").takeIf { value ->
+    value.isNotBlank()
+} ?: rawDate
+
 internal fun formatPrice(money: Money): String {
     val roundedValue = ((money.amount * PriceFractionMultiplier).roundToInt() / PriceFractionMultiplier)
     val rawText = roundedValue.toString()
@@ -110,3 +132,4 @@ internal fun formatPrice(money: Money): String {
 
 private const val PriceFractionMultiplier: Double = 100.0
 private const val PriceTrimSuffixLength: Int = 2
+private const val RatingFractionMultiplier: Double = 10.0

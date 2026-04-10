@@ -40,10 +40,14 @@ internal class ProductCatalogViewModel(
 
     private var refreshJob: Job? = null
     private var loadMoreJob: Job? = null
+    private var productDetailsJob: Job? = null
     private var latestRequest: CatalogRequest? = null
 
     private val _state: MutableStateFlow<ProductCatalogState> = MutableStateFlow(ProductCatalogState())
     internal val state: StateFlow<ProductCatalogState> = _state.asStateFlow()
+    private val _productDetailsState: MutableStateFlow<ProductDetailsState> =
+        MutableStateFlow(ProductDetailsState.Hidden)
+    internal val productDetailsState: StateFlow<ProductDetailsState> = _productDetailsState.asStateFlow()
 
     init {
         observeCatalogRequests()
@@ -152,6 +156,46 @@ internal class ProductCatalogViewModel(
 
     internal fun retryLoad() {
         refreshCatalog(latestRequest ?: currentRequest())
+    }
+
+    internal fun openProductDetails(productId: String) {
+        val request = currentRequest()
+
+        productDetailsJob?.cancel()
+        _productDetailsState.value = ProductDetailsState.Loading(productId)
+        productDetailsJob = scope.launch {
+            runCatching {
+                productRepository.getProductDetails(
+                    productId = productId,
+                    languageCode = request.language.code,
+                    currencyCode = request.currency.code,
+                )
+            }.onSuccess { productDetails ->
+                _productDetailsState.value = ProductDetailsState.Content(productDetails)
+            }.onFailure { throwable ->
+                _productDetailsState.value = ProductDetailsState.Error(
+                    productId = productId,
+                    errorMessage = errorMessageFor(throwable),
+                )
+            }
+        }
+    }
+
+    internal fun retryProductDetails() {
+        val currentProductDetailsState = productDetailsState.value
+        val productId = when (currentProductDetailsState) {
+            is ProductDetailsState.Loading -> currentProductDetailsState.productId
+            is ProductDetailsState.Content -> currentProductDetailsState.details.product.id
+            is ProductDetailsState.Error -> currentProductDetailsState.productId
+            ProductDetailsState.Hidden -> null
+        } ?: return
+
+        openProductDetails(productId)
+    }
+
+    internal fun closeProductDetails() {
+        productDetailsJob?.cancel()
+        _productDetailsState.value = ProductDetailsState.Hidden
     }
 
     internal fun clear() {
@@ -314,17 +358,12 @@ internal class ProductCatalogViewModel(
     private fun handleLoadFailure(
         throwable: Throwable,
     ) {
-        val errorMessage = when (throwable) {
-            is CatalogConnectionException -> ServerConnectionErrorToken
-            else -> throwable.message ?: GenericLoadErrorToken
-        }
-
         _state.update { currentState ->
             currentState.copy(
                 isLoading = false,
                 isLoadingMore = false,
                 canLoadMore = currentState.currentPage < currentState.totalPages,
-                errorMessage = errorMessage,
+                errorMessage = errorMessageFor(throwable),
             )
         }
     }
@@ -348,6 +387,13 @@ internal class ProductCatalogViewModel(
         return listOf(ProductCategory.ALL) + filterNot { category ->
             category == ProductCategory.ALL
         }
+    }
+
+    private fun errorMessageFor(
+        throwable: Throwable,
+    ): String = when (throwable) {
+        is CatalogConnectionException -> ServerConnectionErrorToken
+        else -> throwable.message ?: GenericLoadErrorToken
     }
 
     private data class CatalogRequest(

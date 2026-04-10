@@ -94,7 +94,6 @@ internal class CatalogBackendRepositoryTest {
                         "sort": "price_desc",
                         "sourceLanguage": "en",
                         "sourceCurrency": "USD",
-                        "translationProvider": "yandex",
                         "exchangeRateProvider": "frankfurter"
                       }
                     }
@@ -122,6 +121,66 @@ internal class CatalogBackendRepositoryTest {
         assertEquals(2, page.currentPage)
         assertEquals(2, page.totalPages)
         assertTrue(page.categories.isNotEmpty())
+    }
+
+    @Test
+    fun shouldRequestProductDetailsWithLocalizedReviews() = runTest {
+        val httpClient = createHttpClient { request ->
+            assertEquals("/api/v1/catalog/10", request.url.encodedPath)
+            assertEquals("ru", request.url.parameters["lang"])
+            assertEquals("EUR", request.url.parameters["currency"])
+
+            respondJson(
+                body = """
+                    {
+                      "language": "ru",
+                      "currency": "EUR",
+                      "product": {
+                        "id": "10",
+                        "title": "Night Serum",
+                        "description": "Localized description",
+                        "price": {
+                          "amount": 88.5,
+                          "currency": "EUR"
+                        },
+                        "rating": 4.9,
+                        "imageUrl": "https://example.com/product.png",
+                        "category": {
+                          "slug": "beauty",
+                          "title": "Beauty"
+                        }
+                      },
+                      "reviews": [
+                        {
+                          "id": "review-1",
+                          "rating": 5.0,
+                          "comment": "Localized review comment",
+                          "date": "2026-04-10T10:15:00.000Z",
+                          "reviewerName": "Emma Wilson"
+                        }
+                      ],
+                      "meta": {
+                        "sourceLanguage": "en",
+                        "sourceCurrency": "USD",
+                        "exchangeRateProvider": "frankfurter"
+                      }
+                    }
+                """.trimIndent(),
+            )
+        }
+        val repository = CatalogBackendRepository(httpClient)
+
+        val details = repository.getProductDetails(
+            productId = "10",
+            languageCode = "ru",
+            currencyCode = "EUR",
+        )
+
+        assertEquals("10", details.product.id)
+        assertEquals("Night Serum", details.product.title)
+        assertEquals("EUR", details.product.price.currency.code)
+        assertEquals(1, details.reviews.size)
+        assertEquals("Localized review comment", details.reviews.first().comment)
     }
 
     @Test

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -76,6 +77,8 @@ fun ProductCatalogScreen(
         GlobalContext.get().get<ProductCatalogViewModel>()
     }
     val state by viewModel.state.collectAsState()
+    val productDetailsState by viewModel.productDetailsState.collectAsState()
+    val listState = rememberLazyListState()
 
     DisposableEffect(viewModel) {
         onDispose {
@@ -83,24 +86,40 @@ fun ProductCatalogScreen(
         }
     }
 
-    ProductCatalogContent(
-        state = state,
-        onSearchQueryChanged = viewModel::onSearchQueryChanged,
-        onLanguageSelected = viewModel::onLanguageSelected,
-        onCurrencySelected = viewModel::onCurrencySelected,
-        onCategorySelected = viewModel::onCategorySelected,
-        onSortOptionSelected = viewModel::onSortOptionSelected,
-        onLoadMore = viewModel::loadMore,
-        onRetry = viewModel::retryLoad,
-        onResetFilters = viewModel::resetFilters,
-        modifier = modifier,
-    )
+    when (productDetailsState) {
+        ProductDetailsState.Hidden -> {
+            ProductCatalogContent(
+                state = state,
+                listState = listState,
+                onSearchQueryChanged = viewModel::onSearchQueryChanged,
+                onLanguageSelected = viewModel::onLanguageSelected,
+                onCurrencySelected = viewModel::onCurrencySelected,
+                onCategorySelected = viewModel::onCategorySelected,
+                onSortOptionSelected = viewModel::onSortOptionSelected,
+                onLoadMore = viewModel::loadMore,
+                onRetry = viewModel::retryLoad,
+                onResetFilters = viewModel::resetFilters,
+                onProductSelected = viewModel::openProductDetails,
+                modifier = modifier,
+            )
+        }
+
+        else -> {
+            ProductDetailsContent(
+                state = productDetailsState,
+                onBack = viewModel::closeProductDetails,
+                onRetry = viewModel::retryProductDetails,
+                modifier = modifier,
+            )
+        }
+    }
 }
 
 @Suppress("LongMethod", "CyclomaticComplexMethod")
 @Composable
 internal fun ProductCatalogContent(
     state: ProductCatalogState,
+    listState: LazyListState,
     onSearchQueryChanged: (String) -> Unit,
     onLanguageSelected: (com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage) -> Unit,
     onCurrencySelected: (CurrencyOption) -> Unit,
@@ -109,9 +128,9 @@ internal fun ProductCatalogContent(
     onLoadMore: () -> Unit,
     onRetry: () -> Unit,
     onResetFilters: () -> Unit,
+    onProductSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val listState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
     val hasLoadedContent = state.products.isNotEmpty()
     val hasActiveFilters = state.searchQuery.isNotBlank() ||
@@ -213,7 +232,7 @@ internal fun ProductCatalogContent(
                             CatalogFeedbackCard(
                                 label = stringResource(Res.string.request_failed_label),
                                 title = stringResource(Res.string.request_failed_title),
-                                subtitle = errorSubtitle(errorMessage = state.errorMessage),
+                                subtitle = resolveErrorMessage(errorMessage = state.errorMessage),
                                 actionLabel = stringResource(Res.string.retry),
                                 onAction = onRetry,
                             )
@@ -256,6 +275,7 @@ internal fun ProductCatalogContent(
                         ) { product ->
                             ProductCard(
                                 product = product,
+                                onClick = { onProductSelected(product.id) },
                                 modifier = Modifier.fillMaxWidth(),
                             )
                         }
@@ -342,19 +362,6 @@ private fun heroSubtitle(
         visibleCount = state.products.size,
         totalCount = state.totalProducts,
     )
-}
-
-@Composable
-private fun errorSubtitle(
-    errorMessage: String?,
-): String = when (errorMessage) {
-    null,
-    GenericLoadErrorToken,
-    -> genericLoadError()
-
-    ServerConnectionErrorToken -> serverConnectionError()
-
-    else -> errorMessage
 }
 
 private const val LoadMoreThreshold: Int = 2

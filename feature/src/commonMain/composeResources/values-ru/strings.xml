@@ -42,4 +42,16 @@
     <string name="sort_price_desc">Цена: по убыванию</string>
     <string name="sort_rating_desc">Рейтинг: по убыванию</string>
     <string name="category_all">Все</string>
+    <string name="details_back">Назад в каталог</string>
+    <string name="details_loading_title">Загрузка товара</string>
+    <string name="details_loading_subtitle">Получаем карточку товара и переведенные отзывы</string>
+    <string name="details_error_title">Не удалось загрузить товар</string>
+    <string name="details_error_subtitle">Попробуйте снова или вернитесь в каталог.</string>
+    <string name="details_label">КАРТОЧКА ТОВАРА</string>
+    <string name="details_description">Описание</string>
+    <string name="details_reviews">Отзывы</string>
+    <string name="details_reviews_summary">%1$d отзывов</string>
+    <string name="details_no_reviews_title">Пока нет отзывов</string>
+    <string name="details_no_reviews_subtitle">Для этого товара в текущем датасете нет отзывов.</string>
+    <string name="details_reviewed_on">Дата отзыва: %1$s</string>
 </resources>

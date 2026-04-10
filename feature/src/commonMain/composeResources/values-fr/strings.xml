@@ -42,4 +42,16 @@
     <string name="sort_price_desc">Prix : décroissant</string>
     <string name="sort_rating_desc">Note : décroissante</string>
     <string name="category_all">Tous</string>
+    <string name="details_back">Retour au catalogue</string>
+    <string name="details_loading_title">Chargement du produit</string>
+    <string name="details_loading_subtitle">Récupération de la fiche produit et des avis traduits</string>
+    <string name="details_error_title">Impossible de charger ce produit</string>
+    <string name="details_error_subtitle">Réessayez ou revenez au catalogue.</string>
+    <string name="details_label">FICHE PRODUIT</string>
+    <string name="details_description">Description</string>
+    <string name="details_reviews">Avis</string>
+    <string name="details_reviews_summary">%1$d avis</string>
+    <string name="details_no_reviews_title">Pas encore d'avis</string>
+    <string name="details_no_reviews_subtitle">Cet article ne contient pas encore d'avis dans ce jeu de données.</string>
+    <string name="details_reviewed_on">Publié le %1$s</string>
 </resources>

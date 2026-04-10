@@ -42,4 +42,16 @@
     <string name="sort_price_desc">Precio: de mayor a menor</string>
     <string name="sort_rating_desc">Calificación: de mayor a menor</string>
     <string name="category_all">Todos</string>
+    <string name="details_back">Volver al catálogo</string>
+    <string name="details_loading_title">Cargando producto</string>
+    <string name="details_loading_subtitle">Obteniendo la ficha del producto y las reseñas traducidas</string>
+    <string name="details_error_title">No se pudo cargar este producto</string>
+    <string name="details_error_subtitle">Inténtalo de nuevo o vuelve al catálogo.</string>
+    <string name="details_label">DETALLE DEL PRODUCTO</string>
+    <string name="details_description">Descripción</string>
+    <string name="details_reviews">Reseñas</string>
+    <string name="details_reviews_summary">%1$d reseñas</string>
+    <string name="details_no_reviews_title">Aún no hay reseñas</string>
+    <string name="details_no_reviews_subtitle">Este artículo no tiene reseñas en el conjunto de datos actual.</string>
+    <string name="details_reviewed_on">Reseñado el %1$s</string>
 </resources>

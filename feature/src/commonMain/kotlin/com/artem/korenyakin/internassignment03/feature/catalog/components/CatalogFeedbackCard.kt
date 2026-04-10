@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 internal fun CatalogFeedbackCard(
     label: String,
     title: String,
-    subtitle: String,
+    subtitle: String? = null,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
@@ -76,11 +76,13 @@ internal fun CatalogFeedbackCard(
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                subtitle?.let { subtitleText ->
+                    Text(
+                        text = subtitleText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 if (actionLabel != null && onAction != null) {
                     Box(
                         modifier = Modifier.fillMaxWidth(),

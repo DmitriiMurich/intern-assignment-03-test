@@ -42,4 +42,16 @@
     <string name="sort_price_desc">Ціна: від більшої до меншої</string>
     <string name="sort_rating_desc">Рейтинг: від більшого до меншого</string>
     <string name="category_all">Усі</string>
+    <string name="details_back">Повернутися до каталогу</string>
+    <string name="details_loading_title">Завантаження товару</string>
+    <string name="details_loading_subtitle">Отримуємо картку товару та перекладені відгуки</string>
+    <string name="details_error_title">Не вдалося завантажити товар</string>
+    <string name="details_error_subtitle">Спробуйте ще раз або поверніться до каталогу.</string>
+    <string name="details_label">КАРТКА ТОВАРУ</string>
+    <string name="details_description">Опис</string>
+    <string name="details_reviews">Відгуки</string>
+    <string name="details_reviews_summary">%1$d відгуків</string>
+    <string name="details_no_reviews_title">Поки немає відгуків</string>
+    <string name="details_no_reviews_subtitle">Для цього товару в поточному наборі даних немає відгуків.</string>
+    <string name="details_reviewed_on">Дата відгуку: %1$s</string>
 </resources>

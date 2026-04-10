@@ -42,4 +42,16 @@
     <string name="sort_price_desc">Price: high to low</string>
     <string name="sort_rating_desc">Rating: high to low</string>
     <string name="category_all">All</string>
+    <string name="details_back">Back to catalog</string>
+    <string name="details_loading_title">Loading product</string>
+    <string name="details_loading_subtitle">Fetching the product card and translated reviews</string>
+    <string name="details_error_title">Could not load this product</string>
+    <string name="details_error_subtitle">Try again or return to the catalog.</string>
+    <string name="details_label">PRODUCT DETAIL</string>
+    <string name="details_description">Description</string>
+    <string name="details_reviews">Reviews</string>
+    <string name="details_reviews_summary">%1$d reviews</string>
+    <string name="details_no_reviews_title">No reviews yet</string>
+    <string name="details_no_reviews_subtitle">This item does not have review notes in the current dataset.</string>
+    <string name="details_reviewed_on">Reviewed on %1$s</string>
 </resources>

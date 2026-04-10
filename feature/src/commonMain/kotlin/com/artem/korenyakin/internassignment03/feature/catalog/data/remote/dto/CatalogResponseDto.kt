@@ -11,6 +11,15 @@ internal data class CatalogResponseDto(
 )
 
 @Serializable
+internal data class CatalogProductDetailsDto(
+    val language: String,
+    val currency: String,
+    val product: CatalogProductDto,
+    val reviews: List<CatalogReviewDto>,
+    val meta: CatalogProductDetailsMetaDto,
+)
+
+@Serializable
 internal data class CatalogCategoryDto(
     val slug: String,
     val title: String,
@@ -34,6 +43,15 @@ internal data class CatalogMoneyDto(
 )
 
 @Serializable
+internal data class CatalogReviewDto(
+    val id: String,
+    val rating: Double,
+    val comment: String,
+    val date: String,
+    val reviewerName: String,
+)
+
+@Serializable
 internal data class CatalogMetaDto(
     val totalProducts: Int,
     val totalCategories: Int,
@@ -45,6 +63,12 @@ internal data class CatalogMetaDto(
     val sort: String,
     val sourceLanguage: String,
     val sourceCurrency: String,
-    val translationProvider: String? = null,
+    val exchangeRateProvider: String? = null,
+)
+
+@Serializable
+internal data class CatalogProductDetailsMetaDto(
+    val sourceLanguage: String,
+    val sourceCurrency: String,
     val exchangeRateProvider: String? = null,
 )

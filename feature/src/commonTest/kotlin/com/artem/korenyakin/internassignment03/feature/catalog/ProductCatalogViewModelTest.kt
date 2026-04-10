@@ -4,9 +4,11 @@ import com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage
 import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
 import com.artem.korenyakin.internassignment03.model.domain.Money
 import com.artem.korenyakin.internassignment03.model.domain.Product
+import com.artem.korenyakin.internassignment03.model.domain.ProductDetails
 import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogPage
 import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogQuery
 import com.artem.korenyakin.internassignment03.model.domain.ProductCategory
+import com.artem.korenyakin.internassignment03.model.domain.ProductReview
 import com.artem.korenyakin.internassignment03.model.domain.SortOption
 import com.artem.korenyakin.internassignment03.model.repository.AppLanguageManager
 import com.artem.korenyakin.internassignment03.model.repository.ProductRepository
@@ -143,6 +145,33 @@ internal class ProductCatalogViewModelTest {
             assertEquals("EUR", state.selectedCurrency.code)
             assertTrue(state.products.all { product -> product.price.currency.code == "EUR" })
             assertEquals("EUR", repository.catalogRequests.last().currencyCode)
+        } finally {
+            viewModel.clear()
+        }
+    }
+
+    @Test
+    fun shouldOpenAndCloseProductDetails() = runTest {
+        val repository = FakeProductRepository()
+        val viewModel = createViewModel(
+            repository = repository,
+        )
+
+        try {
+            advanceUntilIdle()
+
+            viewModel.openProductDetails("b-3")
+            advanceUntilIdle()
+
+            val detailState = viewModel.productDetailsState.value as ProductDetailsState.Content
+            assertEquals("b-3", detailState.details.product.id)
+            assertEquals("Night Serum", detailState.details.product.title)
+            assertTrue(detailState.details.reviews.isNotEmpty())
+            assertEquals("b-3", repository.requestedProductDetails.last())
+
+            viewModel.closeProductDetails()
+
+            assertEquals(ProductDetailsState.Hidden, viewModel.productDetailsState.value)
         } finally {
             viewModel.clear()
         }
@@ -291,7 +320,9 @@ internal class ProductCatalogViewModelTest {
 
     private class FakeProductRepository : ProductRepository {
         val catalogRequests: MutableList<ProductCatalogQuery> = mutableListOf()
+        val requestedProductDetails: MutableList<String> = mutableListOf()
         var catalogError: Throwable? = null
+        var productDetailsError: Throwable? = null
         var languagesError: Throwable? = null
 
         override suspend fun getLanguages(): List<CatalogLanguage> {
@@ -348,6 +379,32 @@ internal class ProductCatalogViewModelTest {
                 currentPage = query.page,
                 pageSize = query.pageSize,
                 totalPages = totalPages,
+            )
+        }
+
+        override suspend fun getProductDetails(
+            productId: String,
+            languageCode: String,
+            currencyCode: String,
+        ): ProductDetails {
+            productDetailsError?.let { throwable -> throw throwable }
+            requestedProductDetails += productId
+
+            val product = sampleProducts()
+                .first { product -> product.id == productId }
+                .let { sourceProduct -> localizeProduct(sourceProduct, languageCode, currencyCode) }
+
+            return ProductDetails(
+                product = product,
+                reviews = sampleReviews(productId).map { review ->
+                    if (languageCode == CatalogLanguage.ENGLISH.code) {
+                        review
+                    } else {
+                        review.copy(
+                            comment = "[${languageCode.uppercase()}] ${review.comment}",
+                        )
+                    }
+                },
             )
         }
 
@@ -470,6 +527,23 @@ internal class ProductCatalogViewModelTest {
             imageUrl = "https://example.com/$id.png",
             rating = rating,
             category = category,
+        )
+
+        private fun sampleReviews(productId: String): List<ProductReview> = listOf(
+            ProductReview(
+                id = "$productId-r1",
+                rating = 4.9,
+                comment = "Looks premium and feels durable.",
+                date = "2026-04-10T10:15:00.000Z",
+                reviewerName = "Emma Wilson",
+            ),
+            ProductReview(
+                id = "$productId-r2",
+                rating = 4.7,
+                comment = "Exactly what I expected from the catalog.",
+                date = "2026-04-11T08:45:00.000Z",
+                reviewerName = "Lucas Brown",
+            ),
         )
 
         private fun groceriesCategory(): ProductCategory = ProductCategory(

@@ -42,4 +42,16 @@
     <string name="sort_price_desc">Fiyat: azalan</string>
     <string name="sort_rating_desc">Puan: azalan</string>
     <string name="category_all">Tümü</string>
+    <string name="details_back">Kataloga dön</string>
+    <string name="details_loading_title">Ürün yükleniyor</string>
+    <string name="details_loading_subtitle">Ürün kartı ve çevrilmiş yorumlar getiriliyor</string>
+    <string name="details_error_title">Bu ürün yüklenemedi</string>
+    <string name="details_error_subtitle">Tekrar deneyin veya kataloga dönün.</string>
+    <string name="details_label">ÜRÜN DETAYI</string>
+    <string name="details_description">Açıklama</string>
+    <string name="details_reviews">Yorumlar</string>
+    <string name="details_reviews_summary">%1$d yorum</string>
+    <string name="details_no_reviews_title">Henüz yorum yok</string>
+    <string name="details_no_reviews_subtitle">Bu ürün için mevcut veri kümesinde yorum bulunmuyor.</string>
+    <string name="details_reviewed_on">Değerlendirme tarihi %1$s</string>
 </resources>

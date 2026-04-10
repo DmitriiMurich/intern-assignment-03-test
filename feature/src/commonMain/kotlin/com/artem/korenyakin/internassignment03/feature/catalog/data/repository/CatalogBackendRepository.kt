@@ -3,9 +3,11 @@ package com.artem.korenyakin.internassignment03.feature.catalog.data.repository
 import com.artem.korenyakin.internassignment03.feature.catalog.data.mapper.toDomain
 import com.artem.korenyakin.internassignment03.feature.catalog.data.remote.dto.CatalogCurrenciesResponseDto
 import com.artem.korenyakin.internassignment03.feature.catalog.data.remote.dto.CatalogLanguagesResponseDto
+import com.artem.korenyakin.internassignment03.feature.catalog.data.remote.dto.CatalogProductDetailsDto
 import com.artem.korenyakin.internassignment03.feature.catalog.data.remote.dto.CatalogResponseDto
 import com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage
 import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
+import com.artem.korenyakin.internassignment03.model.domain.ProductDetails
 import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogPage
 import com.artem.korenyakin.internassignment03.model.domain.ProductCatalogQuery
 import com.artem.korenyakin.internassignment03.model.repository.ProductRepository
@@ -63,6 +65,17 @@ internal class CatalogBackendRepository(
             }
         }
             .toDomain(selectedLanguage = selectedLanguage)
+    }
+
+    override suspend fun getProductDetails(
+        productId: String,
+        languageCode: String,
+        currencyCode: String,
+    ): ProductDetails {
+        return getDecoded<CatalogProductDetailsDto>("api/v1/catalog/$productId") {
+            parameter("lang", languageCode)
+            parameter("currency", currencyCode)
+        }.toDomain()
     }
 
     private suspend inline fun <reified T> getDecoded(

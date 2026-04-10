@@ -42,4 +42,16 @@
     <string name="sort_price_desc">Prezzo: decrescente</string>
     <string name="sort_rating_desc">Valutazione: decrescente</string>
     <string name="category_all">Tutti</string>
+    <string name="details_back">Torna al catalogo</string>
+    <string name="details_loading_title">Caricamento prodotto</string>
+    <string name="details_loading_subtitle">Recupero della scheda prodotto e delle recensioni tradotte</string>
+    <string name="details_error_title">Impossibile caricare questo prodotto</string>
+    <string name="details_error_subtitle">Riprova o torna al catalogo.</string>
+    <string name="details_label">DETTAGLIO PRODOTTO</string>
+    <string name="details_description">Descrizione</string>
+    <string name="details_reviews">Recensioni</string>
+    <string name="details_reviews_summary">%1$d recensioni</string>
+    <string name="details_no_reviews_title">Nessuna recensione per ora</string>
+    <string name="details_no_reviews_subtitle">Questo articolo non ha recensioni nel dataset corrente.</string>
+    <string name="details_reviewed_on">Recensito il %1$s</string>
 </resources>
