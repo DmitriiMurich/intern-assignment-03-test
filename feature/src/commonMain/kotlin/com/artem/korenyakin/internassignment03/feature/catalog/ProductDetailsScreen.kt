@@ -55,104 +55,134 @@ internal fun ProductDetailsContent(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-                        MaterialTheme.colorScheme.background,
-                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.18f),
-                    ),
-                ),
-            ),
+        modifier = modifier.productDetailsBackground(),
     ) {
         when (state) {
             ProductDetailsState.Hidden -> Unit
 
-            is ProductDetailsState.Loading -> {
-                ProductDetailsStatus(
-                    onBack = onBack,
-                    title = stringResource(Res.string.details_loading_title),
-                    subtitle = stringResource(Res.string.details_loading_subtitle),
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is ProductDetailsState.Error -> {
-                ProductDetailsStatus(
-                    onBack = onBack,
-                    title = stringResource(Res.string.details_error_title),
-                ) {
-                    CatalogFeedbackCard(
-                        label = stringResource(Res.string.details_label),
-                        title = stringResource(Res.string.details_error_title),
-                        actionLabel = stringResource(Res.string.retry),
-                        onAction = onRetry,
-                    )
-                }
-            }
-
-            is ProductDetailsState.Content -> {
-                val details = state.details
-                val visibleReviews = details.reviews.take(MaxVisibleReviewCards)
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .statusBarsPadding(),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        top = 16.dp,
-                        end = 16.dp,
-                        bottom = 28.dp,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    item(key = "back") {
-                        BackNavigationButton(onBack = onBack)
-                    }
-                    item(key = "hero") {
-                        ProductDetailsHero(
-                            product = details.product,
-                        )
-                    }
-                    item(key = "description") {
-                        ProductDetailsSection(
-                            title = stringResource(Res.string.details_description),
-                        ) {
-                            Text(
-                                text = details.product.description,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                    if (visibleReviews.isNotEmpty()) {
-                        item(key = "reviews-header") {
-                            ProductDetailsSectionHeader(
-                                title = stringResource(Res.string.details_reviews),
-                            )
-                        }
-                        items(
-                            items = visibleReviews,
-                            key = { review -> review.id },
-                        ) { review ->
-                            ProductReviewCard(review = review)
-                        }
-                    } else {
-                        item(key = "reviews-empty") {
-                            CatalogFeedbackCard(
-                                label = stringResource(Res.string.details_label),
-                                title = stringResource(Res.string.details_no_reviews_title),
-                                subtitle = stringResource(Res.string.details_no_reviews_subtitle),
-                            )
-                        }
-                    }
-                }
-            }
+            is ProductDetailsState.Loading -> ProductDetailsLoadingState(onBack = onBack)
+            is ProductDetailsState.Error -> ProductDetailsErrorState(onBack = onBack, onRetry = onRetry)
+            is ProductDetailsState.Content -> ProductDetailsLoadedContent(state = state, onBack = onBack)
         }
+    }
+}
+
+@Composable
+private fun Modifier.productDetailsBackground(): Modifier = fillMaxSize().background(
+    brush = Brush.verticalGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
+            MaterialTheme.colorScheme.background,
+            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.18f),
+        ),
+    ),
+)
+
+@Composable
+private fun ProductDetailsLoadingState(
+    onBack: () -> Unit,
+) {
+    ProductDetailsStatus(
+        onBack = onBack,
+        title = stringResource(Res.string.details_loading_title),
+        subtitle = stringResource(Res.string.details_loading_subtitle),
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun ProductDetailsErrorState(
+    onBack: () -> Unit,
+    onRetry: () -> Unit,
+) {
+    ProductDetailsStatus(
+        onBack = onBack,
+        title = stringResource(Res.string.details_error_title),
+    ) {
+        CatalogFeedbackCard(
+            label = stringResource(Res.string.details_label),
+            title = stringResource(Res.string.details_error_title),
+            actionLabel = stringResource(Res.string.retry),
+            onAction = onRetry,
+        )
+    }
+}
+
+@Composable
+private fun ProductDetailsLoadedContent(
+    state: ProductDetailsState.Content,
+    onBack: () -> Unit,
+) {
+    val details = state.details
+    val visibleReviews = details.reviews.take(MaxVisibleReviewCards)
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            top = 16.dp,
+            end = 16.dp,
+            bottom = 28.dp,
+        ),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        item(key = "back") {
+            BackNavigationButton(onBack = onBack)
+        }
+        item(key = "hero") {
+            ProductDetailsHero(
+                product = details.product,
+            )
+        }
+        item(key = "description") {
+            ProductDescriptionSection(description = details.product.description)
+        }
+        addReviewItems(visibleReviews = visibleReviews)
+    }
+}
+
+private fun androidx.compose.foundation.lazy.LazyListScope.addReviewItems(
+    visibleReviews: List<ProductReview>,
+) {
+    if (visibleReviews.isNotEmpty()) {
+        item(key = "reviews-header") {
+            ProductDetailsSectionHeader(
+                title = stringResource(Res.string.details_reviews),
+            )
+        }
+        items(
+            items = visibleReviews,
+            key = { review -> review.id },
+        ) { review ->
+            ProductReviewCard(review = review)
+        }
+        return
+    }
+
+    item(key = "reviews-empty") {
+        CatalogFeedbackCard(
+            label = stringResource(Res.string.details_label),
+            title = stringResource(Res.string.details_no_reviews_title),
+            subtitle = stringResource(Res.string.details_no_reviews_subtitle),
+        )
+    }
+}
+
+@Composable
+private fun ProductDescriptionSection(
+    description: String,
+) {
+    ProductDetailsSection(
+        title = stringResource(Res.string.details_description),
+    ) {
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -255,52 +285,7 @@ private fun ProductDetailsHero(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(
-                        brush = Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                MaterialTheme.colorScheme.secondaryContainer,
-                            ),
-                        ),
-                    ),
-            ) {
-                AsyncImage(
-                    model = product.imageUrl.takeIf { url -> url.isNotBlank() },
-                    contentDescription = product.title,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 28.dp, vertical = 20.dp),
-                    contentScale = ContentScale.Fit,
-                    alignment = Alignment.Center,
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        DetailPill(text = product.category.title)
-                        DetailPill(
-                            text = formatRatingValue(formatRatingNumber(product.rating)),
-                        )
-                    }
-                    Text(
-                        text = formatPrice(product.price),
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
-            }
+            ProductDetailsHeroImage(product = product)
             Text(
                 text = product.title,
                 style = MaterialTheme.typography.headlineSmall,
@@ -309,6 +294,65 @@ private fun ProductDetailsHero(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+    }
+}
+
+@Composable
+private fun ProductDetailsHeroImage(
+    product: Product,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(240.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.secondaryContainer,
+                    ),
+                ),
+            ),
+    ) {
+        AsyncImage(
+            model = product.imageUrl.takeIf { url -> url.isNotBlank() },
+            contentDescription = product.title,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 28.dp, vertical = 20.dp),
+            contentScale = ContentScale.Fit,
+            alignment = Alignment.Center,
+        )
+        ProductDetailsHeroOverlay(product = product)
+    }
+}
+
+@Composable
+private fun ProductDetailsHeroOverlay(
+    product: Product,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            DetailPill(text = product.category.title)
+            DetailPill(
+                text = formatRatingValue(formatRatingNumber(product.rating)),
+            )
+        }
+        Text(
+            text = formatPrice(product.price),
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 

@@ -17,18 +17,15 @@ internal class AndroidAppLanguageManager(
 
     override fun getCurrentLanguageCode(): String {
         val savedLanguageCode = preferences.getString(LanguageCodeKey, null)
-        if (!savedLanguageCode.isNullOrBlank()) {
-            return normalizeLanguageCode(savedLanguageCode)
-        }
-
         val appLocales = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-        if (appLocales.isNotBlank()) {
-            return normalizeLanguageCode(appLocales.substringBefore(','))
+        val resolvedLanguageCode = when {
+            !savedLanguageCode.isNullOrBlank() -> savedLanguageCode
+            appLocales.isNotBlank() -> appLocales.substringBefore(',')
+            else -> applicationContext.resources.configuration.locales[0]?.language
+                ?: Locale.getDefault().language
         }
 
-        val systemLanguage = applicationContext.resources.configuration.locales[0]?.language
-            ?: Locale.getDefault().language
-        return normalizeLanguageCode(systemLanguage)
+        return normalizeLanguageCode(resolvedLanguageCode)
     }
 
     override fun updateLanguage(languageCode: String) {

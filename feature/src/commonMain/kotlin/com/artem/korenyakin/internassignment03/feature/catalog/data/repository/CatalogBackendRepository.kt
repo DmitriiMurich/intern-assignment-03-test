@@ -82,15 +82,7 @@ internal class CatalogBackendRepository(
         path: String,
         noinline block: HttpRequestBuilder.() -> Unit = {},
     ): T {
-        val response = try {
-            httpClient.get(path, block)
-        } catch (_: ConnectException) {
-            throw CatalogConnectionException()
-        } catch (_: SocketTimeoutException) {
-            throw CatalogConnectionException()
-        } catch (_: UnresolvedAddressException) {
-            throw CatalogConnectionException()
-        }
+        val response = executeRequest(path = path, block = block)
 
         if (response.status.isSuccess()) {
             return response.body()
@@ -106,6 +98,21 @@ internal class CatalogBackendRepository(
                 ?: "Request failed with status ${response.status.value}",
         )
     }
+
+    private suspend fun executeRequest(
+        path: String,
+        block: HttpRequestBuilder.() -> Unit,
+    ) = try {
+        httpClient.get(path, block)
+    } catch (_: ConnectException) {
+        throwCatalogConnectionException()
+    } catch (_: SocketTimeoutException) {
+        throwCatalogConnectionException()
+    } catch (_: UnresolvedAddressException) {
+        throwCatalogConnectionException()
+    }
+
+    private fun throwCatalogConnectionException(): Nothing = throw CatalogConnectionException()
 }
 
 @Serializable

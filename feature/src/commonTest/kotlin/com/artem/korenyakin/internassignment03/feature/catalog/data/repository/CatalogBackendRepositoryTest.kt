@@ -8,6 +8,7 @@ import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.MockRequestHandler
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.HttpRequestData
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -55,7 +56,7 @@ internal class CatalogBackendRepositoryTest {
                     {
                       "items": [
                         { "code": "USD", "name": "US Dollar", "symbol": "$", "isSourceCurrency": true },
-                        { "code": "EUR", "name": "Euro", "symbol": "€", "isSourceCurrency": false }
+                        { "code": "EUR", "name": "Euro", "symbol": "\u20AC", "isSourceCurrency": false }
                       ]
                     }
                 """.trimIndent(),
@@ -67,62 +68,14 @@ internal class CatalogBackendRepositoryTest {
 
         assertEquals(2, currencies.size)
         assertEquals("USD", currencies.first().code)
-        assertEquals("€", currencies.last().symbol)
+        assertEquals("\u20AC", currencies.last().symbol)
     }
 
     @Test
     fun shouldRequestCatalogWithBackendQueryParameters() = runTest {
         val httpClient = createHttpClient { request ->
-            assertEquals("/api/v1/catalog", request.url.encodedPath)
-            assertEquals("ru", request.url.parameters["lang"])
-            assertEquals("EUR", request.url.parameters["currency"])
-            assertEquals("2", request.url.parameters["page"])
-            assertEquals("10", request.url.parameters["pageSize"])
-            assertEquals("phone", request.url.parameters["query"])
-            assertEquals("smartphones", request.url.parameters["category"])
-            assertEquals("price_desc", request.url.parameters["sort"])
-
-            respondJson(
-                body = """
-                    {
-                      "language": "ru",
-                      "currency": "EUR",
-                      "categories": [
-                        { "slug": "smartphones", "title": "Smartphones" }
-                      ],
-                      "items": [
-                        {
-                          "id": "1",
-                          "title": "Телефон",
-                          "description": "Описание",
-                          "price": {
-                            "amount": 999.0,
-                            "currency": "EUR"
-                          },
-                          "rating": 4.8,
-                          "imageUrl": "https://example.com/phone.png",
-                          "category": {
-                            "slug": "smartphones",
-                            "title": "Smartphones"
-                          }
-                        }
-                      ],
-                      "meta": {
-                        "totalProducts": 12,
-                        "totalCategories": 1,
-                        "currentPage": 2,
-                        "pageSize": 10,
-                        "totalPages": 2,
-                        "query": "phone",
-                        "category": "smartphones",
-                        "sort": "price_desc",
-                        "sourceLanguage": "en",
-                        "sourceCurrency": "USD",
-                        "exchangeRateProvider": "frankfurter"
-                      }
-                    }
-                """.trimIndent(),
-            )
+            assertCatalogRequest(request)
+            respondJson(body = localizedCatalogResponse())
         }
         val repository = CatalogBackendRepository(httpClient)
 
@@ -139,7 +92,7 @@ internal class CatalogBackendRepositoryTest {
         )
 
         assertEquals(1, page.products.size)
-        assertEquals("Телефон", page.products.first().title)
+        assertEquals("[RU] Phone", page.products.first().title)
         assertEquals("EUR", page.products.first().price.currency.code)
         assertEquals(12, page.totalProducts)
         assertEquals(2, page.currentPage)
@@ -292,6 +245,59 @@ internal class CatalogBackendRepositoryTest {
 
         assertEquals(null, error.message)
     }
+
+    private fun assertCatalogRequest(
+        request: HttpRequestData,
+    ) {
+        assertEquals("/api/v1/catalog", request.url.encodedPath)
+        assertEquals("ru", request.url.parameters["lang"])
+        assertEquals("EUR", request.url.parameters["currency"])
+        assertEquals("2", request.url.parameters["page"])
+        assertEquals("10", request.url.parameters["pageSize"])
+        assertEquals("phone", request.url.parameters["query"])
+        assertEquals("smartphones", request.url.parameters["category"])
+        assertEquals("price_desc", request.url.parameters["sort"])
+    }
+
+    private fun localizedCatalogResponse(): String = """
+        {
+          "language": "ru",
+          "currency": "EUR",
+          "categories": [
+            { "slug": "smartphones", "title": "Smartphones" }
+          ],
+          "items": [
+            {
+              "id": "1",
+              "title": "[RU] Phone",
+              "description": "[RU] Description",
+              "price": {
+                "amount": 999.0,
+                "currency": "EUR"
+              },
+              "rating": 4.8,
+              "imageUrl": "https://example.com/phone.png",
+              "category": {
+                "slug": "smartphones",
+                "title": "Smartphones"
+              }
+            }
+          ],
+          "meta": {
+            "totalProducts": 12,
+            "totalCategories": 1,
+            "currentPage": 2,
+            "pageSize": 10,
+            "totalPages": 2,
+            "query": "phone",
+            "category": "smartphones",
+            "sort": "price_desc",
+            "sourceLanguage": "en",
+            "sourceCurrency": "USD",
+            "exchangeRateProvider": "frankfurter"
+          }
+        }
+    """.trimIndent()
 
     private fun createHttpClient(
         handler: MockRequestHandler,

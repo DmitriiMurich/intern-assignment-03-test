@@ -57,24 +57,9 @@ internal fun ControlsSection(
     onSortOptionSelected: (SortOption) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
-    val languageOptions = state.languages.map { language ->
-        DropdownOption(
-            value = language,
-            title = languageTitle(language),
-        )
-    }
-    val currencyOptions = state.currencies.map { currency ->
-        DropdownOption(
-            value = currency,
-            title = currencyTitle(currency),
-        )
-    }
-    val sortOptions = SortOption.entries.map { sortOption ->
-        DropdownOption(
-            value = sortOption,
-            title = sortOptionTitle(sortOption),
-        )
-    }
+    val languageOptions = state.languages.toLanguageOptions()
+    val currencyOptions = state.currencies.toCurrencyOptions()
+    val sortOptions = SortOption.entries.toSortOptions()
 
     Surface(
         shape = RoundedCornerShape(28.dp),
@@ -130,6 +115,27 @@ internal fun ControlsSection(
             )
         }
     }
+}
+
+private fun List<CatalogLanguage>.toLanguageOptions(): List<DropdownOption<CatalogLanguage>> = map { language ->
+    DropdownOption(
+        value = language,
+        title = languageTitle(language),
+    )
+}
+
+private fun List<CurrencyOption>.toCurrencyOptions(): List<DropdownOption<CurrencyOption>> = map { currency ->
+    DropdownOption(
+        value = currency,
+        title = currencyTitle(currency),
+    )
+}
+
+private fun List<SortOption>.toSortOptions(): List<DropdownOption<SortOption>> = map { sortOption ->
+    DropdownOption(
+        value = sortOption,
+        title = sortOptionTitle(sortOption),
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
