@@ -147,7 +147,7 @@ export const getCatalogSchema = {
   tags: ["Catalog"],
   summary: "Get localized catalog",
   description:
-    "Returns a server-paginated localized catalog. English source data is synchronized in the background at startup and then refreshed every hour. Non-English responses use curated static translations seeded into PostgreSQL during synchronization.",
+    "Returns a server-paginated localized catalog. English source data is fully refreshed from DummyJSON on every backend startup. Non-English responses use curated static translations seeded into PostgreSQL during startup synchronization.",
   querystring: {
     ...localizationQuerystringSchema,
     properties: {

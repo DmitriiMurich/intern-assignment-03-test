@@ -1,304 +1,86 @@
 # Product Catalog
 
-Тестовое задание на Kotlin Multiplatform: экран каталога продуктов с поиском,
-фильтрацией по категориям, сортировкой и пагинацией.
+Kotlin Multiplatform Android-приложение каталога товаров и отдельный BFF/backend на `Node.js + TypeScript`.
 
-## Что реализовано
+Проект больше не работает напрямую с `DummyJSON`: мобильный клиент ходит в собственный backend, который:
 
-- загрузка каталога продуктов из сети
-- поиск по названию с `debounce 300ms`
-- фильтрация по категориям через chips
-- сортировка по цене и рейтингу
-- комбинирование `search + category + sort`
-- пагинация в формате `load more`
-- состояния `loading`, `empty`, `error`, `retry`
-- отображение изображений товаров
-- unit-тесты на основную бизнес-логику
-- `Detekt` без ошибок
+- синхронизирует source-каталог из `DummyJSON`;
+- хранит данные в `PostgreSQL`;
+- отдает локализованный каталог и карточку товара;
+- конвертирует цены в выбранную валюту;
+- возвращает отзывы для страницы товара.
 
-## Технологии
+## Что В Репозитории
 
-- Kotlin Multiplatform
-- Jetpack Compose
-- Koin
-- Kotlinx Coroutines
-- Kotlinx Serialization
-- Ktor Client
-- Coil 3
-- Detekt
+- `app` — Android host-модуль: `Application`, `MainActivity`, Android-specific wiring.
+- `feature` — shared UI и логика каталога: экран списка, карточка товара, `ViewModel`, repository, mappers.
+- `model` — общие domain-модели и контракты.
+- `backend` — BFF-сервис на `Fastify + PostgreSQL`.
+- `docs` — скриншоты и вспомогательные материалы.
+
+## Что Реализовано
+
+### Мобильное приложение
+
+- каталог товаров с загрузкой с backend;
+- поиск с `debounce 300ms`;
+- фильтрация по категориям;
+- сортировка по цене и рейтингу;
+- серверная пагинация с UX в формате `load more`;
+- переключение языка интерфейса и языка данных каталога;
+- переключение валюты с пересчетом цены на backend;
+- карточка товара с кнопкой назад;
+- отдельный экран товара с ценой, рейтингом, описанием и отзывами;
+- состояния `loading`, `empty`, `error`, `retry`;
+- загрузка изображений через `Coil 3`.
+
+### Backend
+
+- полная синхронизация source-каталога из `DummyJSON` при каждом старте;
+- хранение source-данных, переводов, отзывов и валютных курсов в `PostgreSQL`;
+- демо-локализация названий, описаний, категорий и отзывов через curated static translations;
+- серверные поиск, фильтрация, сортировка и пагинация;
+- конвертация цен по курсам `Frankfurter`;
+- `Swagger UI` и `health` endpoint;
+- unit- и integration-тесты на `Jest`.
 
 ## Архитектура
 
-Проект разделён на три модуля:
+### Android-клиент
 
-- `app` — Android host: `Application`, `MainActivity`, тема, Android-ресурсы,
-  entry point
-- `feature` — логика и UI каталога: экран, `ViewModel`, `State`, use case,
-  data-layer конкретной фичи
-- `model` — общие domain-модели и контракты
-
-Цепочка зависимостей:
+Зависимости между мобильными модулями:
 
 ```text
 app -> feature -> model
 ```
 
-### Почему структура именно такая
+Почему структура такая:
 
-- `app` не хранит бизнес-логику и отвечает только за Android-слой
-- `feature` содержит конкретную фичу каталога целиком
-- `model` хранит переиспользуемые сущности и контракты
+- `app` отвечает только за Android host-слой;
+- `feature` содержит всю конкретную фичу каталога;
+- `model` хранит переиспользуемые domain-сущности и repository-контракты.
 
-Внутри `feature/catalog` presentation-сущности (`ProductCatalogScreen`,
-`ProductCatalogState`, `ProductCatalogViewModel`) оставлены рядом, потому что
-фича пока компактная. Дополнительное дробление на `screen/`, `state/`,
-`viewmodel/` сейчас дало бы больше шума, чем пользы. При дальнейшем росте фичи
-естественный следующий шаг — выделение слоя `presentation/`.
+### Backend
 
-## Источник данных
-
-В качестве API выбран `DummyJSON`.
-
-Почему именно он:
-
-- подходит под формат e-commerce каталога
-- отдаёт товары, категории, рейтинг и изображения
-- поддерживает `limit/skip`, поиск и сортировку
-- не требует авторизации
-- позволяет быстро собрать реалистичный demo-flow
-
-### Почему пагинация реализована локально
-
-В `DummyJSON` есть отдельные механики для `limit/skip`, поиска, сортировки и
-категорий. Но экран каталога в этом проекте требует устойчивую комбинацию
-`search + category + sort + pagination` в одном сценарии.
-
-В текущем решении каталог загружается целиком, а поиск, фильтрация, сортировка
-и `load more` выполняются локально. Это даёт несколько плюсов:
-
-- предсказуемое поведение при комбинировании фильтров
-- простой и прозрачный `debounce 300ms`
-- стабильное unit-тестирование бизнес-логики
-- отсутствие расхождений между разными сетевыми endpoint'ами
-
-Для датасета `DummyJSON` на `194` товаров это инженерно оправданный компромисс.
-Для production-версии следующим шагом был бы собственный backend или BFF-слой
-с единым контрактом под комбинированную фильтрацию, сортировку и серверную
-пагинацию.
-
-## Строки и ресурсы
-
-Статические UI-строки теперь вынесены в multiplatform resources внутри shared-модуля:
-
-- `feature/src/commonMain/composeResources/values/strings.xml`
-
-Экран и его компоненты читают строки напрямую из `commonMain` через:
-
-- `org.jetbrains.compose.resources.stringResource(...)`
-- сгенерированный класс `Res`
-
-Это убирает Android-only bridge и делает строковые ресурсы доступными на уровне shared UI. В `app`
-остался только Android-ресурс `app_name`, который нужен хост-модулю.
-
-### Почему каталог остаётся на английском
-
-Локализация интерфейса и локализация самих данных каталога — это разные задачи. Кнопки, заголовки и
-служебные сообщения теперь можно локализовать на уровне shared resources. Но названия, описания и
-категории товаров приходят из `DummyJSON` на английском языке.
-
-Для автоматического перевода контента в реальном приложении уже нужен не только resource-слой, а
-отдельный backend/proxy к translation API. Это нужно для:
-
-- защиты ключей внешнего переводчика
-- кэширования переводов
-- контроля стоимости и лимитов перевода
-- единообразного перевода на всех клиентах
-
-Поэтому в текущем решении локализован статический UI-слой, а данные каталога отображаются в
-оригинале API.
-## Тесты
-
-Реализованы unit-тесты для:
-
-- `SearchProductsUseCase`
-- `ProductCatalogViewModel`
-- `DummyJsonProductMapper`
-- `DummyJsonProductRepository`
-
-Что покрыто:
-
-- начальная загрузка каталога
-- поиск по query
-- фильтр по категории
-- сортировка по цене
-- сортировка по рейтингу
-- комбинация `search + category`
-- `debounce 300ms`
-- `load more`
-- `reset filters`
-- empty result
-- error state и `retry`
-- mapper и repository data-layer
-
-Что мокалось:
-
-- в тестах `ViewModel` использован `FakeProductRepository`
-- в тестах `repository` использован `Ktor MockEngine`
-- `SearchProductsUseCase` и mapper тестируются без моков, как чистая логика
-
-## Качество кода
-
-`Detekt` подключён и проходит без ошибок.
-
-Команда запуска:
-
-```powershell
-$env:JAVA_HOME="<path-to-jdk>"
-$env:Path="$env:JAVA_HOME\bin;$env:Path"
-.\gradlew.bat :app:detekt :feature:detekt :model:detekt
-```
-
-## Запуск проекта
-
-### Через Android Studio
-
-1. Открыть корень проекта `internassignment03`
-2. Дождаться `Gradle Sync`
-3. Проверить `Gradle JDK`: должен быть выбран `JDK 17+` или `JDK 21+`
-4. Запустить конфигурацию `app` на эмуляторе или устройстве
-
-### Через терминал
-
-Сборка debug APK:
-
-```powershell
-$env:JAVA_HOME="<path-to-jdk>"
-$env:Path="$env:JAVA_HOME\bin;$env:Path"
-.\gradlew.bat :app:assembleDebug
-```
-
-Запуск тестов:
-
-```powershell
-$env:JAVA_HOME="<path-to-jdk>"
-$env:Path="$env:JAVA_HOME\bin;$env:Path"
-.\gradlew.bat :feature:allTests
-```
-
-## Структура проекта
+Поток данных выглядит так:
 
 ```text
-intern-assignment-03/
-├── app/
-├── feature/
-├── model/
-├── docs/
-├── build.gradle.kts
-├── settings.gradle.kts
-└── README.md
+Android app -> backend -> DummyJSON
+                       -> Frankfurter
+                       -> PostgreSQL
 ```
 
-## Скриншоты
+Роли backend:
 
-### Главный экран
-![Главный экран](docs/images/catalog-home.png)
+- скрывает внешние API от мобильного клиента;
+- отдает один стабильный контракт для приложения;
+- хранит локализованные данные и отзывы;
+- конвертирует цены на сервере;
+- берет на себя серверную пагинацию и фильтрацию.
 
-### Поиск: ввод запроса
-![Поиск: ввод запроса](docs/images/catalog-search-1.png)
+## Поддерживаемые Языки И Валюты
 
-### Поиск: результат фильтрации
-![Поиск: результат фильтрации](docs/images/catalog-search-2.png)
-
-### Фильтрация по категории: выбор категории
-![Фильтрация по категории: выбор категории](docs/images/catalog-category-1.png)
-
-### Фильтрация по категории: результат
-![Фильтрация по категории: результат](docs/images/catalog-category-2.png)
-
-### Пустой результат
-![Пустой результат](docs/images/catalog-empty.png)
-
-### Ошибка загрузки
-![Ошибка загрузки](docs/images/catalog-error.png)
-## Видео
-
-[YouTube demo](https://youtu.be/VGIUjqqG7-8)
-
-## APK
-
-[Download APK](https://github.com/Bellou1337/intern-assignment-03/releases/download/v1.0.0/app-release.apk)
-
-## Использованные ИИ-инструменты
-
-- Codex
-
-## Что можно улучшить дальше
-
-- добавить backend/BFF-слой для серверной пагинации и единой комбинированной фильтрации
-- добавить мультиязычность UI и перевод контента каталога через backend/proxy
-## Backend
-
-В репозитории появился отдельный backend-сервис на `Node.js + TypeScript`, который живёт рядом с Android-приложением в папке `backend/`.
-
-Зачем он нужен:
-
-- мобильный клиент больше не должен ходить напрямую в `DummyJSON`;
-- переводы нельзя безопасно делать прямо на клиенте, потому что ключи переводчика нельзя хранить в приложении;
-- поиск, фильтрация, сортировка и пагинация теперь могут выполняться на сервере;
-- переводы кешируются в `PostgreSQL`, поэтому backend не переводит один и тот же товар заново на каждый запрос.
-
-### Как работает backend
-
-Схема работы такая:
-
-```text
-mobile app -> backend -> DummyJSON
-                     -> PostgreSQL
-```
-
-Backend:
-
-- загружает source-каталог из `DummyJSON`;
-- хранит исходные данные на английском в `PostgreSQL`;
-- при синхронизации source-каталога заранее заполняет mock-переводы для всех поддерживаемых языков;
-- отдает клиенту уже локализованный список товаров;
-- сам применяет `query`, `category`, `sort`, `page`, `pageSize`.
-
-При старте backend делает первичную фоновую синхронизацию source-каталога из `DummyJSON`, а затем обновляет его каждый час.
-
-### Эндпоинты backend
-
-`GET /health`
-
-- liveness-check сервиса
-
-`GET /api/v1/languages`
-
-- возвращает список поддерживаемых языков API
-
-`GET /api/v1/catalog`
-
-- главный эндпоинт каталога
-- поддерживает локализацию, поиск, фильтрацию, сортировку и серверную пагинацию
-
-Параметры `GET /api/v1/catalog`:
-
-- `lang` — язык ответа, по умолчанию `en`
-- `page` — номер страницы, начиная с `1`
-- `pageSize` — размер страницы, по умолчанию `20`, максимум `100`
-- `query` — поисковая строка
-- `category` — `slug` категории
-- `sort` — одно из значений: `price_asc`, `price_desc`, `rating_desc`
-
-Пример:
-
-```text
-GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&sort=price_asc
-```
-
-### Поддерживаемые языки
-
-Список языков сейчас фиксирован в коде backend-а:
+### Языки
 
 - `en`
 - `ru`
@@ -311,57 +93,211 @@ GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&
 - `uk`
 - `zh`
 
-### Переменные окружения backend
+### Валюты
 
-Пример лежит в `backend/.env.example`.
+- `USD`
+- `EUR`
+- `RUB`
+- `GBP`
+- `UAH`
+- `TRY`
+- `CNY`
+- `JPY`
+- `CAD`
+- `CHF`
 
-Используются такие переменные:
+## Быстрый Старт
 
-- `HOST` — адрес, на котором слушает backend
-- `PORT` — порт backend
-- `DATABASE_URL` — строка подключения к `PostgreSQL`
-- `DUMMYJSON_BASE_URL` — базовый URL `DummyJSON`
+Рекомендуемый сценарий для локального запуска:
 
-Пример:
+1. Скопировать root env-файл:
 
-```env
-HOST=0.0.0.0
-PORT=8080
-DATABASE_URL=postgresql://catalog:catalog@localhost:5432/catalog
-DUMMYJSON_BASE_URL=https://dummyjson.com
+```powershell
+Copy-Item .env.example .env
 ```
 
-### Как запустить backend
+2. Поднять `PostgreSQL` и backend:
 
-Через Docker:
-
-```bash
-docker compose up --build
+```powershell
+docker compose up -d --build postgres backend
 ```
 
-После запуска backend будет доступен на:
+3. Дождаться, пока backend станет доступен:
 
 ```text
-http://localhost:8080
+http://localhost:8080/health
 ```
 
-Swagger UI:
+4. Запустить Android-приложение.
+
+`backend` на старте выполняет полную синхронизацию каталога из `DummyJSON`, поэтому первый запуск может занять немного больше времени, чем обычный hot restart.
+
+## Запуск Проекта
+
+### Через Android Studio
+
+1. Открыть корень проекта `internassignment03`.
+2. Дождаться `Gradle Sync`.
+3. Убедиться, что выбран JDK из Android Studio или любой совместимый `JDK 17+`.
+4. Поднять backend.
+5. Запустить конфигурацию `app` на эмуляторе или устройстве.
+
+### Через Терминал
+
+Сборка debug APK:
+
+```powershell
+$env:JAVA_HOME='D:\android-studio\jbr'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+.\gradlew.bat :app:assembleDebug
+```
+
+Сборка release APK:
+
+```powershell
+$env:JAVA_HOME='D:\android-studio\jbr'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+.\gradlew.bat :app:assembleRelease
+```
+
+### Базовый URL Backend Для Android
+
+По умолчанию Android-приложение собирается с:
 
 ```text
-http://localhost:8080/docs
+http://10.0.2.2:8080/
 ```
 
-Локальный запуск без Docker для backend:
+Это подходит для Android Emulator, когда backend запущен на хост-машине.
 
-```bash
-docker compose up -d postgres
-cd backend
-npm install
-npm run dev
+Если приложение запускается на физическом устройстве, базовый URL можно переопределить через Gradle property:
+
+```powershell
+$env:JAVA_HOME='D:\android-studio\jbr'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+.\gradlew.bat :app:assembleDebug -Pbackend.baseUrl=http://<LAN-IP>:8080/
 ```
 
-### Где лежит полная документация
+## Документация
 
-Подробная документация backend-а вынесена в отдельный файл:
+Дополнительные документы по проекту:
 
 - [backend/README.md](backend/README.md)
+- [docs/testing-spec.md](docs/testing-spec.md) — подробная QA-спецификация
+
+## Backend
+
+Коротко:
+
+- Docker Compose использует root `.env`;
+- backend слушает `http://localhost:8080`;
+- Swagger доступен на `http://localhost:8080/docs`;
+- `PostgreSQL` публикуется на хосте как `localhost:5433`.
+
+## Тесты И Качество Кода
+
+### Mobile
+
+Прогон shared/mobile-тестов:
+
+```powershell
+$env:GRADLE_USER_HOME='D:\internassignment03\.gradle-user-mobile-tests'
+$env:JAVA_HOME='D:\android-studio\jbr'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+.\gradlew.bat :feature:allTests --no-daemon
+```
+
+Прогон `detekt`:
+
+```powershell
+$env:JAVA_HOME='D:\android-studio\jbr'
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+.\gradlew.bat :app:detekt :feature:detekt :model:detekt
+```
+
+### Backend
+
+Из папки `backend`:
+
+```powershell
+npm run test:unit
+npm run test:integration
+npm run test:all
+```
+
+Integration-тесты backend ожидают доступную PostgreSQL-базу. По умолчанию используется:
+
+```text
+postgresql://catalog:catalog@127.0.0.1:5433/catalog
+```
+
+При необходимости можно переопределить `TEST_DATABASE_URL`.
+
+## Основные Технологии
+
+### Mobile
+
+- Kotlin Multiplatform
+- Jetpack Compose
+- Koin
+- Kotlinx Coroutines
+- Kotlinx Serialization
+- Ktor Client
+- Coil 3
+- Detekt
+
+### Backend
+
+- Node.js 20+
+- TypeScript
+- Fastify
+- PostgreSQL
+- Jest
+- Docker Compose
+
+### Внешние сервисы
+
+- DummyJSON
+- Frankfurter
+
+## Скриншоты
+
+### Главный экран
+
+![Главный экран](docs/images/catalog-home.png)
+
+### Поиск: ввод запроса
+
+![Поиск: ввод запроса](docs/images/catalog-search-1.png)
+
+### Поиск: результат фильтрации
+
+![Поиск: результат фильтрации](docs/images/catalog-search-2.png)
+
+### Фильтрация по категории: выбор категории
+
+![Фильтрация по категории: выбор категории](docs/images/catalog-category-1.png)
+
+### Фильтрация по категории: результат
+
+![Фильтрация по категории: результат](docs/images/catalog-category-2.png)
+
+### Пустой результат
+
+![Пустой результат](docs/images/catalog-empty.png)
+
+### Ошибка загрузки
+
+![Ошибка загрузки](docs/images/catalog-error.png)
+
+## Видео
+
+[YouTube demo](https://youtu.be/VGIUjqqG7-8)
+
+## APK И Релизы
+
+- [GitHub Releases](https://github.com/Bellou1337/intern-assignment-03/releases/tag/v.2.0.0)
+
+## Использованные AI-Инструменты
+
+- Codex

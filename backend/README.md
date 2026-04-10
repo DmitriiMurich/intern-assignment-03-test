@@ -1,50 +1,68 @@
 # Backend
 
-## Что это
+## Что Это
 
-`backend` — это BFF-сервис для мобильного каталога.
+`backend/` — это BFF-сервис для Android-клиента каталога.
 
-Он решает несколько задач:
+Он нужен, чтобы:
 
-- забирает source-данные из `DummyJSON`;
-- хранит английскую версию каталога в `PostgreSQL`;
-- заранее записывает mock-переводы для всех поддерживаемых языков в базе;
-- отдает мобильному приложению уже локализованный и серверно-пагинируемый каталог.
+- не ходить из мобильного приложения напрямую в `DummyJSON`;
+- хранить source-каталог и локализованные данные в своей базе;
+- отдавать приложению один стабильный API-контракт;
+- переводить каталог и отзывы на сервере;
+- конвертировать цены в выбранную валюту;
+- централизовать серверные поиск, фильтрацию, сортировку и пагинацию.
 
-Цепочка запросов выглядит так:
+## Стек
+
+- Node.js `20+`
+- TypeScript
+- Fastify
+- PostgreSQL
+- Jest
+- Docker Compose
+
+Внешние сервисы:
+
+- `DummyJSON` — источник source-товаров и отзывов;
+- `Frankfurter` — поставщик валютных курсов.
+
+## Как Это Работает
 
 ```text
 mobile app -> backend -> DummyJSON
+                     -> Frankfurter
                      -> PostgreSQL
 ```
 
-## Как это работает
+### Поведение На Старте
 
-1. Клиент вызывает `GET /api/v1/catalog`.
-2. При старте backend выполняет фоновую синхронизацию source-каталога из `DummyJSON`, а затем повторяет её каждый час.
-3. Если запрошен язык `en`, backend отдает данные из source-таблиц.
-4. Для всех поддерживаемых не-английских языков backend заранее записывает mock-переводы в `PostgreSQL` после синхронизации source-каталога.
-5. Поиск, фильтрация, сортировка и пагинация выполняются на сервере.
+При запуске backend:
 
-## Эндпоинты
+1. создает и проверяет схему в `PostgreSQL`;
+2. полностью перезагружает source-каталог из `DummyJSON`;
+3. пересеивает локализации для всех поддерживаемых не-английских языков;
+4. проверяет наличие валютных курсов и при необходимости обновляет их.
 
-### `GET /health`
+Важно:
 
-Проверка доступности сервиса.
+- каталог синхронизируется при каждом старте backend;
+- почасовой sync каталога больше не используется;
+- почасовым остался только refresh валютных курсов.
 
-Успешный ответ:
+### Локализация
 
-```json
-{
-  "status": "ok"
-}
-```
+Сейчас локализация каталога сделана как demo-friendly server-side решение:
 
-### `GET /api/v1/languages`
+- source-язык — `en`;
+- для остальных языков backend заполняет curated static translations;
+- переводятся категории, названия товаров, описания и комментарии отзывов.
 
-Возвращает фиксированный список поддерживаемых языков API.
+Это не live machine translation и не внешний платный переводчик, а контролируемые статические переводы, пригодные для демонстрации сценария локализованного каталога.
 
-Сейчас поддерживаются:
+## Поддерживаемые Языки И Валюты
+
+### Языки
 
 - `en`
 - `ru`
@@ -57,36 +75,96 @@ mobile app -> backend -> DummyJSON
 - `uk`
 - `zh`
 
-### `GET /api/v1/catalog`
+### Валюты
 
-Главный эндпоинт каталога.
+- `USD`
+- `EUR`
+- `RUB`
+- `GBP`
+- `UAH`
+- `TRY`
+- `CNY`
+- `JPY`
+- `CAD`
+- `CHF`
+
+## API
+
+## `GET /health`
+
+Liveness-check сервиса.
+
+Успешный ответ:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+## `GET /api/v1/languages`
+
+Возвращает фиксированный список поддерживаемых языков.
+
+Пример ответа:
+
+```json
+{
+  "items": [
+    { "code": "en", "name": "English", "isSourceLanguage": true },
+    { "code": "ru", "name": "Russian", "isSourceLanguage": false }
+  ]
+}
+```
+
+## `GET /api/v1/currencies`
+
+Возвращает фиксированный список поддерживаемых валют.
+
+Пример ответа:
+
+```json
+{
+  "items": [
+    { "code": "USD", "name": "US Dollar", "symbol": "$", "isSourceCurrency": true },
+    { "code": "EUR", "name": "Euro", "symbol": "€", "isSourceCurrency": false }
+  ]
+}
+```
+
+## `GET /api/v1/catalog`
+
+Главный endpoint каталога.
 
 Поддерживает:
 
-- локализацию;
+- локализацию данных;
+- выбор валюты;
 - серверную пагинацию;
 - поиск;
 - фильтр по категории;
 - сортировку.
 
-Query-параметры:
+### Query-параметры
 
-- `lang` — язык ответа. По умолчанию `en`.
-- `page` — номер страницы, начиная с `1`. По умолчанию `1`.
-- `pageSize` — размер страницы. По умолчанию `20`, максимум `100`.
-- `query` — поисковая строка по локализованным `title` и `description`.
-- `category` — `slug` категории.
-- `sort` — сортировка: `price_asc`, `price_desc`, `rating_desc`.
+- `lang` — код языка ответа, по умолчанию `en`
+- `currency` — код валюты ответа, по умолчанию `USD`
+- `page` — номер страницы, начиная с `1`, по умолчанию `1`
+- `pageSize` — размер страницы, по умолчанию `20`, максимум `100`
+- `query` — поисковая строка
+- `category` — `slug` категории
+- `sort` — `price_asc`, `price_desc`, `rating_desc`
 
 Пример:
 
 ```text
-GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&sort=price_asc
+GET /api/v1/catalog?lang=ru&currency=EUR&page=1&pageSize=20&query=phone&category=smartphones&sort=price_asc
 ```
 
-Успешный ответ содержит:
+В ответе возвращаются:
 
 - `language`
+- `currency`
 - `categories`
 - `items`
 - `meta.totalProducts`
@@ -99,6 +177,61 @@ GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&
 - `meta.sort`
 - `meta.sourceLanguage`
 - `meta.sourceCurrency`
+- `meta.exchangeRateProvider`
+
+Если выбрана исходная валюта `USD`, поле `exchangeRateProvider` будет `null`. Для конвертации используется `frankfurter`.
+
+## `GET /api/v1/catalog/:productId`
+
+Возвращает карточку конкретного товара.
+
+Поддерживает:
+
+- локализацию карточки;
+- локализацию комментариев отзывов;
+- конвертацию цены;
+- выдачу отзывов для detail-экрана.
+
+### Query-параметры
+
+- `lang` — код языка ответа, по умолчанию `en`
+- `currency` — код валюты ответа, по умолчанию `USD`
+
+Пример:
+
+```text
+GET /api/v1/catalog/10?lang=ru&currency=EUR
+```
+
+В ответе возвращаются:
+
+- `language`
+- `currency`
+- `product`
+- `reviews`
+- `meta.sourceLanguage`
+- `meta.sourceCurrency`
+- `meta.exchangeRateProvider`
+
+## Формат Ошибок
+
+Ошибки отдаются в одном формате:
+
+```json
+{
+  "statusCode": 404,
+  "error": "PRODUCT_NOT_FOUND",
+  "message": "Product 10 was not found"
+}
+```
+
+Типовые ответы:
+
+- `400` — ошибка валидации query/path параметров
+- `404` — товар не найден
+- `502` — ошибка внешнего провайдера
+- `503` — необходимые source-данные или курсы еще недоступны
+- `500` — внутренняя ошибка сервера
 
 ## Swagger
 
@@ -108,106 +241,150 @@ Swagger UI доступен по адресу:
 http://localhost:8080/docs
 ```
 
-Чтобы его открыть:
+## Переменные Окружения
 
-1. Подними `PostgreSQL`.
-2. Запусти backend.
-3. Открой `/docs` в браузере.
+### Для Docker Compose
 
-## Переменные окружения
+Docker Compose читает root-файл:
 
-Пример лежит в [backend/.env.example](C:/projects/intern-assignment-03/backend/.env.example).
+- [../.env.example](../.env.example)
 
-Используются такие переменные:
+Обычно достаточно:
 
-- `HOST` — адрес, на котором слушает backend. Для локального запуска подходит `0.0.0.0`.
-- `PORT` — порт backend. По умолчанию используется `8080`.
-- `DATABASE_URL` — строка подключения к `PostgreSQL`.
-- `DUMMYJSON_BASE_URL` — базовый URL внешнего каталога. Обычно оставляется `https://dummyjson.com`.
+```powershell
+Copy-Item .env.example .env
+```
+
+Пример root `.env`:
+
+```env
+POSTGRES_DB=catalog
+POSTGRES_USER=catalog
+POSTGRES_PASSWORD=catalog
+HOST=0.0.0.0
+PORT=8080
+DATABASE_URL=postgresql://catalog:catalog@postgres:5432/catalog
+DUMMYJSON_BASE_URL=https://dummyjson.com
+```
+
+### Для Локального Запуска Backend Без Docker
+
+`dotenv` читает env-файл из папки `backend`, поэтому для локального `npm run dev` нужен отдельный файл:
+
+- [backend/.env.example](./.env.example)
 
 Пример:
 
 ```env
 HOST=0.0.0.0
 PORT=8080
-DATABASE_URL=postgresql://catalog:catalog@localhost:5432/catalog
+DATABASE_URL=postgresql://catalog:catalog@127.0.0.1:5433/catalog
 DUMMYJSON_BASE_URL=https://dummyjson.com
 ```
 
-## Локальный запуск
+Разница важная:
+
+- внутри Docker Compose используется хост `postgres:5432`;
+- при локальном запуске с хоста используется `127.0.0.1:5433`.
+
+## Запуск
 
 ### Через Docker Compose
 
 Из корня репозитория:
 
-```bash
-docker compose up --build
+```powershell
+Copy-Item .env.example .env
+docker compose up -d --build postgres backend
 ```
 
-После этого будут подняты:
+После запуска:
 
-- `postgres`
-- `backend`
+- backend: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/docs`
+- PostgreSQL на хосте: `localhost:5433`
 
-Backend будет доступен на:
+### Локально Через Node.js
 
-```text
-http://localhost:8080
-```
+1. Поднять только базу:
 
-### Через локальный Node.js
-
-1. Подними только базу:
-
-```bash
+```powershell
 docker compose up -d postgres
 ```
 
-2. Перейди в папку `backend`:
+2. Подготовить backend env:
 
-```bash
+```powershell
+Copy-Item .\backend\.env.example .\backend\.env
+```
+
+3. Перейти в `backend` и установить зависимости:
+
+```powershell
 cd backend
-```
-
-3. Подними `postgres`:
-
-```bash
-docker compose up -d postgres
-```
-
-4. Установи зависимости:
-
-```bash
 npm install
 ```
 
-5. Запусти dev-сервер:
+4. Запустить dev-сервер:
 
-```bash
+```powershell
 npm run dev
 ```
 
-Либо production-like запуск:
+Production-like запуск:
 
-```bash
+```powershell
 npm run build
 npm run start
 ```
 
-## База данных
+## Данные В PostgreSQL
 
-`PostgreSQL` используется для двух типов данных:
-
-- source-каталог на английском;
-- кеш переводов по языкам.
-
-Основные таблицы:
+В базе используются такие таблицы:
 
 - `categories`
 - `products`
-- `category_translations`
 - `product_translations`
+- `category_translations`
+- `product_reviews`
+- `product_review_translations`
+- `currency_rates`
 
-## Полезные ссылки
+Что хранится:
 
-- DummyJSON docs: https://dummyjson.com/docs/products
+- source-каталог на английском;
+- локализованные данные по языкам;
+- отзывы и переводы отзывов;
+- валютные курсы для конвертации цен.
+
+## Тесты
+
+Тесты разделены на две группы:
+
+- `tests/unit`
+- `tests/integration`
+
+Скрипты:
+
+```powershell
+npm run test:unit
+npm run test:integration
+npm run test:all
+```
+
+### Integration-тесты
+
+Integration-тесты работают с реальной `PostgreSQL` и создают отдельную schema на каждый прогон.
+
+Порядок выбора строки подключения:
+
+1. `TEST_DATABASE_URL`
+2. `DATABASE_URL`
+3. fallback: `postgresql://catalog:catalog@127.0.0.1:5433/catalog`
+
+Если база недоступна, integration-тесты завершатся ошибкой с явным сообщением.
+
+## Полезные Ссылки
+
+- DummyJSON: https://dummyjson.com/docs/products
+- Frankfurter: https://www.frankfurter.app/
