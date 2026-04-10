@@ -1,81 +1,33 @@
-import {
-  sourceLanguageCode,
-  type SupportedLanguageCode,
-} from "../../../shared/constants/languages";
 import { AppError } from "../../../shared/errors/app-error";
-import type { CatalogListParams } from "../domain/catalog.types";
-import { LibreTranslateClient } from "../infrastructure/libre-translate.client";
+import type { CatalogListParams, CatalogProductDetailsParams } from "../domain/catalog.types";
 import { CatalogRepository } from "../infrastructure/catalog.repository";
 import { CurrencyRateService } from "./currency-rate.service";
-
-const translationProvider = "libretranslate";
 
 export class CatalogService {
   constructor(
     private readonly catalogRepository: CatalogRepository,
-    private readonly libreTranslateClient: LibreTranslateClient,
     private readonly currencyRateService: CurrencyRateService,
   ) {}
 
   async getCatalog(params: CatalogListParams) {
     await this.ensureSourceCatalogAvailable();
-
-    if (params.languageCode !== sourceLanguageCode) {
-      await this.ensureCategoryTranslations(params.languageCode);
-      await this.ensureProductTranslations(params.languageCode);
-    }
-
     const localizedCatalog = await this.catalogRepository.getLocalizedCatalog(params);
     return this.currencyRateService.convertCatalog(localizedCatalog, params.currencyCode);
   }
 
-  private async ensureProductTranslations(languageCode: SupportedLanguageCode): Promise<void> {
-    const missingTranslations = await this.catalogRepository.getMissingProductTranslations(languageCode);
+  async getProductDetails(params: CatalogProductDetailsParams) {
+    await this.ensureSourceCatalogAvailable();
+    const localizedProductDetails = await this.catalogRepository.getLocalizedProductDetails(params);
 
-    if (missingTranslations.length === 0) {
-      return;
+    if (!localizedProductDetails) {
+      throw new AppError(
+        404,
+        "PRODUCT_NOT_FOUND",
+        `Product ${params.productId} was not found`,
+      );
     }
 
-    const translatedTitles = await this.libreTranslateClient.translateTexts(
-      missingTranslations.map((translation) => translation.sourceTitle),
-      languageCode,
-    );
-    const translatedDescriptions = await this.libreTranslateClient.translateTexts(
-      missingTranslations.map((translation) => translation.sourceDescription),
-      languageCode,
-    );
-
-    await this.catalogRepository.saveProductTranslations(
-      languageCode,
-      missingTranslations.map((translation, index) => ({
-        productId: translation.productId,
-        title: translatedTitles[index] ?? translation.sourceTitle,
-        description: translatedDescriptions[index] ?? translation.sourceDescription,
-      })),
-      translationProvider,
-    );
-  }
-
-  private async ensureCategoryTranslations(languageCode: SupportedLanguageCode): Promise<void> {
-    const missingTranslations = await this.catalogRepository.getMissingCategoryTranslations(languageCode);
-
-    if (missingTranslations.length === 0) {
-      return;
-    }
-
-    const translatedTitles = await this.libreTranslateClient.translateTexts(
-      missingTranslations.map((translation) => translation.sourceTitle),
-      languageCode,
-    );
-
-    await this.catalogRepository.saveCategoryTranslations(
-      languageCode,
-      missingTranslations.map((translation, index) => ({
-        categorySlug: translation.categorySlug,
-        title: translatedTitles[index] ?? translation.sourceTitle,
-      })),
-      translationProvider,
-    );
+    return this.currencyRateService.convertProductDetails(localizedProductDetails, params.currencyCode);
   }
 
   private async ensureSourceCatalogAvailable(): Promise<void> {

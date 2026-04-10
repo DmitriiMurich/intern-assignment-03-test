@@ -19,9 +19,22 @@ export interface CatalogListParams {
   sort: CatalogSortOption;
 }
 
+export interface CatalogProductDetailsParams {
+  productId: string;
+  languageCode: SupportedLanguageCode;
+  currencyCode: SupportedCurrencyCode;
+}
+
 export interface SourceCategory {
   slug: string;
   title: string;
+}
+
+export interface SourceReview {
+  rating: number;
+  comment: string;
+  date: string;
+  reviewerName: string;
 }
 
 export interface SourceProduct {
@@ -32,6 +45,7 @@ export interface SourceProduct {
   rating: number;
   imageUrl: string;
   categorySlug: string;
+  reviews: SourceReview[];
 }
 
 export interface LocalizedCategory {
@@ -52,6 +66,14 @@ export interface LocalizedProduct {
   category: LocalizedCategory;
 }
 
+export interface LocalizedProductReview {
+  id: string;
+  rating: number;
+  comment: string;
+  date: string;
+  reviewerName: string;
+}
+
 export interface LocalizedCatalog {
   language: SupportedLanguageCode;
   currency: SupportedCurrencyCode;
@@ -66,8 +88,16 @@ export interface LocalizedCatalog {
   sort: CatalogSortOption;
 }
 
+export interface LocalizedProductDetails {
+  language: SupportedLanguageCode;
+  currency: SupportedCurrencyCode;
+  product: LocalizedProduct;
+  reviews: LocalizedProductReview[];
+}
+
 export interface MissingProductTranslation {
   productId: number;
+  categorySlug: string;
   sourceTitle: string;
   sourceDescription: string;
 }
@@ -75,4 +105,9 @@ export interface MissingProductTranslation {
 export interface MissingCategoryTranslation {
   categorySlug: string;
   sourceTitle: string;
+}
+
+export interface MissingProductReviewTranslation {
+  reviewId: number;
+  sourceComment: string;
 }

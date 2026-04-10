@@ -6,17 +6,16 @@ import { healthResponseSchema } from "../shared/http/schemas/common.schemas";
 import { registerSwagger } from "./register-swagger";
 import { CatalogRepository } from "../modules/catalog/infrastructure/catalog.repository";
 import { DummyJsonClient } from "../modules/catalog/infrastructure/dummy-json.client";
-import { LibreTranslateClient } from "../modules/catalog/infrastructure/libre-translate.client";
 import { CatalogSyncService } from "../modules/catalog/application/catalog-sync.service";
 import { CatalogService } from "../modules/catalog/application/catalog.service";
 import { registerCatalogRoutes } from "../modules/catalog/http/catalog.routes";
 import { FrankfurterClient } from "../modules/catalog/infrastructure/frankfurter.client";
 import { CurrencyRateService } from "../modules/catalog/application/currency-rate.service";
+import { CatalogTranslationSeedService } from "../modules/catalog/application/catalog-translation.seed.service";
 
 interface CreateAppOptions {
   pool: Pool;
   dummyJsonBaseUrl: string;
-  libreTranslateUrl: string;
 }
 
 export async function createApp(options: CreateAppOptions) {
@@ -28,13 +27,14 @@ export async function createApp(options: CreateAppOptions) {
   const dummyJsonClient = new DummyJsonClient(
     options.dummyJsonBaseUrl,
   );
-  const libreTranslateClient = new LibreTranslateClient(
-    options.libreTranslateUrl,
+  const catalogTranslationSeedService = new CatalogTranslationSeedService(
+    catalogRepository,
   );
   const frankfurterClient = new FrankfurterClient();
   const catalogSyncService = new CatalogSyncService(
     catalogRepository,
     dummyJsonClient,
+    catalogTranslationSeedService,
   );
   const currencyRateService = new CurrencyRateService(
     catalogRepository,
@@ -42,7 +42,6 @@ export async function createApp(options: CreateAppOptions) {
   );
   const catalogService = new CatalogService(
     catalogRepository,
-    libreTranslateClient,
     currencyRateService,
   );
 

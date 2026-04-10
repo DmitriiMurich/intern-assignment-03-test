@@ -51,9 +51,39 @@ const productSchema = {
   },
 } as const;
 
+const productReviewSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["id", "rating", "comment", "date", "reviewerName"],
+  properties: {
+    id: { type: "string" },
+    rating: { type: "number" },
+    comment: { type: "string" },
+    date: { type: "string" },
+    reviewerName: { type: "string" },
+  },
+} as const;
+
 const sortSchema = {
   type: "string",
   enum: [...sortOptions],
+} as const;
+
+const localizationQuerystringSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    lang: {
+      ...languageCodeSchema,
+      default: sourceLanguageCode,
+      description: "Language code for localized catalog content.",
+    },
+    currency: {
+      ...currencyCodeSchema,
+      default: sourceCurrencyCode,
+      description: "Currency code for converted product prices.",
+    },
+  },
 } as const;
 
 export const getLanguagesSchema = {
@@ -117,21 +147,11 @@ export const getCatalogSchema = {
   tags: ["Catalog"],
   summary: "Get localized catalog",
   description:
-    "Returns a server-paginated localized catalog. English source data is synchronized in the background at startup and then refreshed every hour. Non-English responses use cached LibreTranslate results or create them on demand.",
+    "Returns a server-paginated localized catalog. English source data is synchronized in the background at startup and then refreshed every hour. Non-English responses use curated static translations seeded into PostgreSQL during synchronization.",
   querystring: {
-    type: "object",
-    additionalProperties: false,
+    ...localizationQuerystringSchema,
     properties: {
-      lang: {
-        ...languageCodeSchema,
-        default: sourceLanguageCode,
-        description: "Language code for localized catalog content.",
-      },
-      currency: {
-        ...currencyCodeSchema,
-        default: sourceCurrencyCode,
-        description: "Currency code for converted product prices.",
-      },
+      ...localizationQuerystringSchema.properties,
       page: {
         type: "integer",
         minimum: 1,
@@ -194,7 +214,6 @@ export const getCatalogSchema = {
             "sort",
             "sourceLanguage",
             "sourceCurrency",
-            "translationProvider",
             "exchangeRateProvider",
           ],
           properties: {
@@ -213,12 +232,6 @@ export const getCatalogSchema = {
             sort: sortSchema,
             sourceLanguage: { type: "string", enum: [sourceLanguageCode] },
             sourceCurrency: { type: "string", enum: [sourceCurrencyCode] },
-            translationProvider: {
-              anyOf: [
-                { type: "string", enum: ["libretranslate"] },
-                { type: "null" },
-              ],
-            },
             exchangeRateProvider: {
               anyOf: [
                 { type: "string", enum: ["frankfurter"] },
@@ -230,6 +243,61 @@ export const getCatalogSchema = {
       },
     },
     400: errorResponseSchema,
+    502: errorResponseSchema,
+    503: errorResponseSchema,
+    500: errorResponseSchema,
+  },
+} as const;
+
+export const getProductDetailsSchema = {
+  tags: ["Catalog"],
+  summary: "Get localized product details",
+  description:
+    "Returns a localized product card with translated review comments for the selected language and converted price for the selected currency.",
+  params: {
+    type: "object",
+    additionalProperties: false,
+    required: ["productId"],
+    properties: {
+      productId: {
+        type: "string",
+        description: "External product identifier from the catalog response.",
+      },
+    },
+  },
+  querystring: localizationQuerystringSchema,
+  response: {
+    200: {
+      type: "object",
+      additionalProperties: false,
+      required: ["language", "currency", "product", "reviews", "meta"],
+      properties: {
+        language: languageCodeSchema,
+        currency: currencyCodeSchema,
+        product: productSchema,
+        reviews: {
+          type: "array",
+          items: productReviewSchema,
+        },
+        meta: {
+          type: "object",
+          additionalProperties: false,
+          required: ["sourceLanguage", "sourceCurrency", "exchangeRateProvider"],
+          properties: {
+            sourceLanguage: { type: "string", enum: [sourceLanguageCode] },
+            sourceCurrency: { type: "string", enum: [sourceCurrencyCode] },
+            exchangeRateProvider: {
+              anyOf: [
+                { type: "string", enum: ["frankfurter"] },
+                { type: "null" },
+              ],
+            },
+          },
+        },
+      },
+    },
+    400: errorResponseSchema,
+    404: errorResponseSchema,
     502: errorResponseSchema,
     503: errorResponseSchema,
     500: errorResponseSchema,

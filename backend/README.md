@@ -8,15 +8,13 @@
 
 - забирает source-данные из `DummyJSON`;
 - хранит английскую версию каталога в `PostgreSQL`;
-- переводит названия, описания и названия категорий через `LibreTranslate`;
-- кеширует переводы по языкам в базе;
+- заранее записывает mock-переводы для всех поддерживаемых языков в базе;
 - отдает мобильному приложению уже локализованный и серверно-пагинируемый каталог.
 
 Цепочка запросов выглядит так:
 
 ```text
 mobile app -> backend -> DummyJSON
-                     -> LibreTranslate
                      -> PostgreSQL
 ```
 
@@ -25,9 +23,8 @@ mobile app -> backend -> DummyJSON
 1. Клиент вызывает `GET /api/v1/catalog`.
 2. При старте backend выполняет фоновую синхронизацию source-каталога из `DummyJSON`, а затем повторяет её каждый час.
 3. Если запрошен язык `en`, backend отдает данные из source-таблиц.
-4. Если запрошен другой язык, backend проверяет кеш переводов в `PostgreSQL`.
-5. Для отсутствующих переводов backend вызывает `LibreTranslate`, сохраняет результат в БД и только потом формирует ответ.
-6. Поиск, фильтрация, сортировка и пагинация выполняются на сервере.
+4. Для всех поддерживаемых не-английских языков backend заранее записывает mock-переводы в `PostgreSQL` после синхронизации source-каталога.
+5. Поиск, фильтрация, сортировка и пагинация выполняются на сервере.
 
 ## Эндпоинты
 
@@ -101,7 +98,7 @@ GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&
 - `meta.category`
 - `meta.sort`
 - `meta.sourceLanguage`
-- `meta.translationProvider`
+- `meta.sourceCurrency`
 
 ## Swagger
 
@@ -127,7 +124,6 @@ http://localhost:8080/docs
 - `PORT` — порт backend. По умолчанию используется `8080`.
 - `DATABASE_URL` — строка подключения к `PostgreSQL`.
 - `DUMMYJSON_BASE_URL` — базовый URL внешнего каталога. Обычно оставляется `https://dummyjson.com`.
-- `LIBRETRANSLATE_URL` — базовый URL сервиса `LibreTranslate`.
 
 Пример:
 
@@ -136,10 +132,7 @@ HOST=0.0.0.0
 PORT=8080
 DATABASE_URL=postgresql://catalog:catalog@localhost:5432/catalog
 DUMMYJSON_BASE_URL=https://dummyjson.com
-LIBRETRANSLATE_URL=http://libretranslate:5000
 ```
-
-`docker-compose.yml` уже поднимает контейнер `libretranslate`, поэтому для локального запуска отдельные ключи не нужны.
 
 ## Локальный запуск
 
@@ -154,7 +147,6 @@ docker compose up --build
 После этого будут подняты:
 
 - `postgres`
-- `libretranslate`
 - `backend`
 
 Backend будет доступен на:
@@ -177,10 +169,10 @@ docker compose up -d postgres
 cd backend
 ```
 
-3. Подними `postgres` и `libretranslate`:
+3. Подними `postgres`:
 
 ```bash
-docker compose up -d postgres libretranslate
+docker compose up -d postgres
 ```
 
 4. Установи зависимости:
@@ -219,5 +211,3 @@ npm run start
 ## Полезные ссылки
 
 - DummyJSON docs: https://dummyjson.com/docs/products
-- LibreTranslate docs: https://docs.libretranslate.com/
-- LibreTranslate repository: https://github.com/LibreTranslate/LibreTranslate

@@ -15,26 +15,6 @@ services:
     volumes:
       - catalog_postgres_data:/var/lib/postgresql/data
 
-  libretranslate:
-    image: libretranslate/libretranslate:latest
-    container_name: catalog-libretranslate
-    restart: unless-stopped
-    environment:
-      LT_LOAD_ONLY: en,ru,de,fr,es,it,pt,tr,uk,zh
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/languages').read()\"",
-        ]
-      interval: 10s
-      timeout: 10s
-      retries: 12
-    ports:
-      - "5000:5000"
-    volumes:
-      - libretranslate_data:/home/libretranslate/.local
-
   backend:
     build:
       context: ./backend
@@ -43,8 +23,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      libretranslate:
-        condition: service_healthy
     env_file:
       - ./.env
     ports:
@@ -52,4 +30,3 @@ services:
 
 volumes:
   catalog_postgres_data:
-  libretranslate_data:

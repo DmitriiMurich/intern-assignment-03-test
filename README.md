@@ -253,7 +253,6 @@ intern-assignment-03/
 
 ```text
 mobile app -> backend -> DummyJSON
-                     -> LibreTranslate
                      -> PostgreSQL
 ```
 
@@ -261,8 +260,7 @@ Backend:
 
 - загружает source-каталог из `DummyJSON`;
 - хранит исходные данные на английском в `PostgreSQL`;
-- при запросе не-английского языка переводит `title`, `description` и названия категорий через `LibreTranslate`;
-- сохраняет переводы в БД;
+- при синхронизации source-каталога заранее заполняет mock-переводы для всех поддерживаемых языков;
 - отдает клиенту уже локализованный список товаров;
 - сам применяет `query`, `category`, `sort`, `page`, `pageSize`.
 
@@ -323,7 +321,6 @@ GET /api/v1/catalog?lang=ru&page=1&pageSize=20&query=phone&category=smartphones&
 - `PORT` — порт backend
 - `DATABASE_URL` — строка подключения к `PostgreSQL`
 - `DUMMYJSON_BASE_URL` — базовый URL `DummyJSON`
-- `LIBRETRANSLATE_URL` — базовый URL сервиса `LibreTranslate`
 
 Пример:
 
@@ -332,12 +329,7 @@ HOST=0.0.0.0
 PORT=8080
 DATABASE_URL=postgresql://catalog:catalog@localhost:5432/catalog
 DUMMYJSON_BASE_URL=https://dummyjson.com
-LIBRETRANSLATE_URL=http://libretranslate:5000
 ```
-
-### Откуда берется LibreTranslate
-
-Для локального запуска отдельные ключи не нужны: `docker-compose.yml` поднимает контейнер `libretranslate` рядом с backend и PostgreSQL.
 
 ### Как запустить backend
 

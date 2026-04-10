@@ -39,5 +39,4 @@ export const env = {
   port: readNumber("PORT", 8080),
   databaseUrl: readUrl("DATABASE_URL"),
   dummyJsonBaseUrl: readUrl("DUMMYJSON_BASE_URL", "https://dummyjson.com"),
-  libreTranslateUrl: readUrl("LIBRETRANSLATE_URL", "http://libretranslate:5000"),
 };

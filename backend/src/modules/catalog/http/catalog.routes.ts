@@ -12,6 +12,9 @@ import {
   supportedLanguageCodes,
 } from "../../../shared/constants/languages";
 import type {
+  CatalogProductDetailsQuerystring,
+  CatalogProductDetailsResponse,
+  CatalogProductParams,
   CurrenciesResponse,
   CatalogQuerystring,
   CatalogResponse,
@@ -19,7 +22,12 @@ import type {
 } from "./catalog.contracts";
 import { CatalogService } from "../application/catalog.service";
 import { CurrencyRateService } from "../application/currency-rate.service";
-import { getCatalogSchema, getCurrenciesSchema, getLanguagesSchema } from "./catalog.schemas";
+import {
+  getCatalogSchema,
+  getCurrenciesSchema,
+  getLanguagesSchema,
+  getProductDetailsSchema,
+} from "./catalog.schemas";
 
 interface CatalogRoutesOptions {
   catalogService: CatalogService;
@@ -98,7 +106,38 @@ export async function registerCatalogRoutes(
           sort: catalog.sort,
           sourceLanguage: sourceLanguageCode,
           sourceCurrency: sourceCurrencyCode,
-          translationProvider: requestedLanguage === sourceLanguageCode ? null : "libretranslate",
+          exchangeRateProvider: requestedCurrency === sourceCurrencyCode ? null : "frankfurter",
+        },
+      };
+    },
+  );
+
+  app.get<{
+    Params: CatalogProductParams;
+    Querystring: CatalogProductDetailsQuerystring;
+    Reply: CatalogProductDetailsResponse;
+  }>(
+    "/api/v1/catalog/:productId",
+    {
+      schema: getProductDetailsSchema,
+    },
+    async (request) => {
+      const requestedLanguage = request.query.lang ?? sourceLanguageCode;
+      const requestedCurrency = request.query.currency ?? sourceCurrencyCode;
+      const productDetails = await options.catalogService.getProductDetails({
+        productId: request.params.productId,
+        languageCode: requestedLanguage,
+        currencyCode: requestedCurrency,
+      });
+
+      return {
+        language: productDetails.language,
+        currency: productDetails.currency,
+        product: productDetails.product,
+        reviews: productDetails.reviews,
+        meta: {
+          sourceLanguage: sourceLanguageCode,
+          sourceCurrency: sourceCurrencyCode,
           exchangeRateProvider: requestedCurrency === sourceCurrencyCode ? null : "frankfurter",
         },
       };

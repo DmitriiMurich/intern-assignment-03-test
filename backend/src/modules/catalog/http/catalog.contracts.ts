@@ -12,6 +12,15 @@ export interface CatalogQuerystring {
   sort?: CatalogSortOption;
 }
 
+export interface CatalogProductDetailsQuerystring {
+  lang?: SupportedLanguageCode;
+  currency?: SupportedCurrencyCode;
+}
+
+export interface CatalogProductParams {
+  productId: string;
+}
+
 export interface ApiErrorResponse {
   statusCode: number;
   error: string;
@@ -57,6 +66,14 @@ export interface CatalogProductResponse {
   category: CatalogCategoryResponse;
 }
 
+export interface CatalogReviewResponse {
+  id: string;
+  rating: number;
+  comment: string;
+  date: string;
+  reviewerName: string;
+}
+
 export interface CatalogResponse {
   language: SupportedLanguageCode;
   currency: SupportedCurrencyCode;
@@ -73,7 +90,18 @@ export interface CatalogResponse {
     sort: CatalogSortOption;
     sourceLanguage: "en";
     sourceCurrency: "USD";
-    translationProvider: "libretranslate" | null;
+    exchangeRateProvider: "frankfurter" | null;
+  };
+}
+
+export interface CatalogProductDetailsResponse {
+  language: SupportedLanguageCode;
+  currency: SupportedCurrencyCode;
+  product: CatalogProductResponse;
+  reviews: CatalogReviewResponse[];
+  meta: {
+    sourceLanguage: "en";
+    sourceCurrency: "USD";
     exchangeRateProvider: "frankfurter" | null;
   };
 }

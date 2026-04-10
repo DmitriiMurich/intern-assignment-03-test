@@ -8,7 +8,7 @@ export async function registerSwagger(app: FastifyInstance): Promise<void> {
       info: {
         title: "Catalog BFF API",
         description:
-          "Backend-for-frontend for the mobile product catalog. Provides localized catalog data with PostgreSQL caching and on-demand LibreTranslate translation.",
+          "Backend-for-frontend for the mobile product catalog. Provides localized catalog data with PostgreSQL caching and curated static translations seeded into PostgreSQL.",
         version: "1.0.0",
       },
       tags: [

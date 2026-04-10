@@ -11,6 +11,14 @@ interface DummyJsonProductDto {
   rating?: number;
   images?: string[];
   thumbnail?: string;
+  reviews?: DummyJsonReviewDto[];
+}
+
+interface DummyJsonReviewDto {
+  rating?: number;
+  comment?: string;
+  date?: string;
+  reviewerName?: string;
 }
 
 interface DummyJsonProductsResponseDto {
@@ -54,6 +62,12 @@ export class DummyJsonClient {
       rating: product.rating ?? 0,
       imageUrl: product.thumbnail ?? product.images?.[0] ?? "",
       categorySlug: product.category,
+      reviews: (product.reviews ?? []).map((review) => ({
+        rating: review.rating ?? 0,
+        comment: review.comment ?? "",
+        date: review.date ?? "",
+        reviewerName: review.reviewerName ?? "Anonymous",
+      })),
     }));
   }
 
