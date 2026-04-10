@@ -47,6 +47,30 @@ internal class CatalogBackendRepositoryTest {
     }
 
     @Test
+    fun shouldRequestCurrenciesFromBackend() = runTest {
+        val httpClient = createHttpClient { request ->
+            assertEquals("/api/v1/currencies", request.url.encodedPath)
+            respondJson(
+                body = """
+                    {
+                      "items": [
+                        { "code": "USD", "name": "US Dollar", "symbol": "$", "isSourceCurrency": true },
+                        { "code": "EUR", "name": "Euro", "symbol": "€", "isSourceCurrency": false }
+                      ]
+                    }
+                """.trimIndent(),
+            )
+        }
+        val repository = CatalogBackendRepository(httpClient)
+
+        val currencies = repository.getCurrencies()
+
+        assertEquals(2, currencies.size)
+        assertEquals("USD", currencies.first().code)
+        assertEquals("€", currencies.last().symbol)
+    }
+
+    @Test
     fun shouldRequestCatalogWithBackendQueryParameters() = runTest {
         val httpClient = createHttpClient { request ->
             assertEquals("/api/v1/catalog", request.url.encodedPath)
@@ -218,6 +242,31 @@ internal class CatalogBackendRepositoryTest {
         }
 
         assertEquals("Yandex access denied for the configured folder", error.message)
+    }
+
+    @Test
+    fun shouldFallbackToHttpStatusMessageWhenBackendErrorBodyIsNotJson() = runTest {
+        val httpClient = createHttpClient {
+            respond(
+                content = "Gateway timeout",
+                status = HttpStatusCode.BadGateway,
+                headers = headersOf(
+                    HttpHeaders.ContentType,
+                    ContentType.Text.Plain.toString(),
+                ),
+            )
+        }
+        val repository = CatalogBackendRepository(httpClient)
+
+        val error = assertFailsWith<IllegalStateException> {
+            repository.getProductDetails(
+                productId = "10",
+                languageCode = "en",
+                currencyCode = "USD",
+            )
+        }
+
+        assertEquals("Request failed with status 502", error.message)
     }
 
     @Test

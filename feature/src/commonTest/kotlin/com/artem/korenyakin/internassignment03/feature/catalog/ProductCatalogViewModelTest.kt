@@ -1,5 +1,6 @@
 package com.artem.korenyakin.internassignment03.feature.catalog
 
+import com.artem.korenyakin.internassignment03.feature.catalog.data.repository.CatalogConnectionException
 import com.artem.korenyakin.internassignment03.model.domain.CatalogLanguage
 import com.artem.korenyakin.internassignment03.model.domain.CurrencyOption
 import com.artem.korenyakin.internassignment03.model.domain.Money
@@ -178,6 +179,37 @@ internal class ProductCatalogViewModelTest {
     }
 
     @Test
+    fun shouldShowProductDetailsErrorAndRetrySuccessfully() = runTest {
+        val repository = FakeProductRepository().apply {
+            productDetailsError = CatalogConnectionException()
+        }
+        val viewModel = createViewModel(
+            repository = repository,
+        )
+
+        try {
+            advanceUntilIdle()
+
+            viewModel.openProductDetails("b-3")
+            advanceUntilIdle()
+
+            val errorState = viewModel.productDetailsState.value as ProductDetailsState.Error
+            assertEquals("b-3", errorState.productId)
+            assertEquals(ServerConnectionErrorToken, errorState.errorMessage)
+
+            repository.productDetailsError = null
+            viewModel.retryProductDetails()
+            advanceUntilIdle()
+
+            val contentState = viewModel.productDetailsState.value as ProductDetailsState.Content
+            assertEquals("b-3", contentState.details.product.id)
+            assertTrue(contentState.details.reviews.isNotEmpty())
+        } finally {
+            viewModel.clear()
+        }
+    }
+
+    @Test
     fun shouldUsePreferredAppLanguageOnInit() = runTest {
         val viewModel = createViewModel(
             repository = FakeProductRepository(),
@@ -300,6 +332,27 @@ internal class ProductCatalogViewModelTest {
             assertNull(state.errorMessage)
             assertEquals(20, state.products.size)
             assertEquals(45, state.totalProducts)
+        } finally {
+            viewModel.clear()
+        }
+    }
+
+    @Test
+    fun shouldExposeConnectionErrorTokenWhenCatalogRequestCannotReachServer() = runTest {
+        val repository = FakeProductRepository().apply {
+            catalogError = CatalogConnectionException()
+        }
+        val viewModel = createViewModel(
+            repository = repository,
+        )
+
+        try {
+            advanceUntilIdle()
+
+            val state = viewModel.state.value
+            assertEquals(ServerConnectionErrorToken, state.errorMessage)
+            assertTrue(state.products.isEmpty())
+            assertFalse(state.canLoadMore)
         } finally {
             viewModel.clear()
         }
