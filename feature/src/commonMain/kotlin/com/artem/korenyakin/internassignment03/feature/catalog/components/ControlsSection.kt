@@ -117,6 +117,7 @@ internal fun ControlsSection(
     }
 }
 
+@Composable
 private fun List<CatalogLanguage>.toLanguageOptions(): List<DropdownOption<CatalogLanguage>> = map { language ->
     DropdownOption(
         value = language,
@@ -131,6 +132,7 @@ private fun List<CurrencyOption>.toCurrencyOptions(): List<DropdownOption<Curren
     )
 }
 
+@Composable
 private fun List<SortOption>.toSortOptions(): List<DropdownOption<SortOption>> = map { sortOption ->
     DropdownOption(
         value = sortOption,
