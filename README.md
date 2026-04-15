@@ -183,6 +183,7 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 Дополнительные документы по проекту:
 
 - [backend/README.md](backend/README.md)
+- [docs/product-details-feature-spec.md](docs/product-details-feature-spec.md) — спецификация фичи detail-экрана товара и backend-контракта для него
 - [docs/testing-spec.md](docs/testing-spec.md) — подробная QA-спецификация
 
 ## Backend
