@@ -1,0 +1,10 @@
+{
+  "_description": "Written by write-tests agent after project analysis. Read by run-tests and run-project-and-tests agents.",
+  "_version": "1.0",
+  "analyzed_at": null,
+  "project": {
+    "backend_endpoints": [],
+    "test_files_generated": [],
+    "coverage_targets": []
+  }
+}
