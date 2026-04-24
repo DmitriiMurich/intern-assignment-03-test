@@ -46,18 +46,26 @@ class ProductDetailsFactory(factory.DictFactory):
     reviews = factory.LazyFunction(lambda: [ReviewFactory() for _ in range(3)])
 
 
+class CatalogMetaFactory(factory.DictFactory):
+    totalProducts = 5
+    totalCategories = 3
+    currentPage = 1
+    pageSize = 20
+    totalPages = 1
+    query = ""
+    category = None
+    sort = "price_asc"
+    sourceLanguage = "en"
+    sourceCurrency = "USD"
+    exchangeRateProvider = None
+
+
 class CatalogPageFactory(factory.DictFactory):
     language = "en"
     currency = "USD"
     categories = factory.LazyFunction(lambda: [CategoryFactory() for _ in range(3)])
-    products = factory.LazyFunction(lambda: [ProductFactory() for _ in range(5)])
-    totalProducts = 5
-    page = 1
-    pageSize = 20
-    totalPages = 1
-    query = ""
-    categorySlug = None
-    sort = "price_asc"
+    items = factory.LazyFunction(lambda: [ProductFactory() for _ in range(5)])
+    meta = factory.SubFactory(CatalogMetaFactory)
 
 
 class LanguageFactory(factory.DictFactory):

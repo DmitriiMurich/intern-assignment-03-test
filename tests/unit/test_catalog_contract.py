@@ -24,7 +24,7 @@ from tests.helpers.assertions import (
     assert_error_shape,
     assert_pagination_consistency,
 )
-from tests.helpers.factories import CatalogPageFactory, ProductDetailsFactory
+from tests.helpers.factories import CatalogPageFactory, ProductDetailsFactory, ProductFactory
 
 BASE = "http://localhost:8080"
 
@@ -53,8 +53,12 @@ class TestCatalogContractPositive:
     @respx.mock
     def test_pagination_metadata_is_consistent(self):
         """page / pageSize / totalPages / products count must be internally consistent."""
-        payload = CatalogPageFactory(page=1, pageSize=20, totalProducts=45, totalPages=3)
-        payload["products"] = [{}] * 20  # full page
+        payload = CatalogPageFactory()
+        payload["meta"]["currentPage"] = 1
+        payload["meta"]["pageSize"] = 20
+        payload["meta"]["totalProducts"] = 45
+        payload["meta"]["totalPages"] = 3
+        payload["items"] = [ProductFactory() for _ in range(20)]  # full page
         respx.get(f"{BASE}/api/v1/catalog").mock(return_value=httpx.Response(200, json=payload))
 
         with httpx.Client() as client:

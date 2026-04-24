@@ -56,18 +56,17 @@ def assert_product_shape(product: dict) -> None:
 
 
 def assert_catalog_page_shape(body: dict) -> None:
-    required = {
-        "language", "currency", "categories", "products",
-        "totalProducts", "page", "pageSize", "totalPages", "query", "sort",
-    }
+    # Real API shape: { language, currency, categories, items, meta }
+    required = {"language", "currency", "categories", "items", "meta"}
     missing = required - body.keys()
     assert not missing, f"CatalogPage missing fields: {missing}"
-    assert isinstance(body["products"], list), "products must be a list"
+    assert isinstance(body["items"], list), "items must be a list"
     assert isinstance(body["categories"], list), "categories must be a list"
-    assert body["page"] >= 1, "page must be >= 1"
-    assert body["pageSize"] >= 1, "pageSize must be >= 1"
-    assert body["totalPages"] >= 0, "totalPages must be non-negative"
-    for product in body["products"]:
+    meta = body["meta"]
+    assert meta["currentPage"] >= 1, "currentPage must be >= 1"
+    assert meta["pageSize"] >= 1, "pageSize must be >= 1"
+    assert meta["totalPages"] >= 0, "totalPages must be non-negative"
+    for product in body["items"]:
         assert_product_shape(product)
 
 
@@ -89,11 +88,12 @@ def assert_review_shape(review: dict) -> None:
 
 def assert_pagination_consistency(body: dict) -> None:
     """ISTQB boundary check: page × pageSize ≤ totalProducts (within tolerance)."""
-    page = body["page"]
-    page_size = body["pageSize"]
-    total_pages = body["totalPages"]
-    total_products = body["totalProducts"]
-    actual_count = len(body["products"])
+    meta = body["meta"]
+    page = meta["currentPage"]
+    page_size = meta["pageSize"]
+    total_pages = meta["totalPages"]
+    total_products = meta["totalProducts"]
+    actual_count = len(body["items"])
 
     if total_pages > 0:
         assert page <= total_pages, f"page {page} exceeds totalPages {total_pages}"

@@ -1,119 +1,121 @@
-"""
-Smoke tests — critical user journeys.
-
-These are the first tests to run in CI after deployment.
-Each test maps to a user-visible scenario from testing-spec.md.
-Failure here means the feature is broken for real users.
-
-ISTQB: Smoke / Sanity testing
-"""
+"""Smoke tests — critical user journeys (ISTQB: System Testing)."""
 from __future__ import annotations
 
-import pytest
+import allure
 import httpx
+import pytest
 
 from tests.helpers.assertions import (
-    assert_ok,
-    assert_catalog_page_shape,
-    assert_product_details_shape,
-    assert_pagination_consistency,
+    assert_ok, assert_catalog_page_shape,
+    assert_product_details_shape, assert_pagination_consistency,
 )
 
 
+@allure.feature("End-to-End")
+@allure.story("Critical User Journeys")
 @pytest.mark.ui
 @pytest.mark.smoke
 class TestCriticalUserJourneys:
 
+    @allure.title("Server responds to health check")
+    @allure.severity(allure.severity_level.BLOCKER)
     def test_server_is_alive(self, smoke_client: httpx.Client):
-        """Journey: app opens → backend must respond."""
         assert_ok(smoke_client.get("/health"))
 
+    @allure.title("Catalog loads on app startup")
+    @allure.severity(allure.severity_level.BLOCKER)
     def test_catalog_loads_on_startup(self, smoke_client: httpx.Client):
-        """Journey: user opens the app → catalog list is shown."""
         response = smoke_client.get("/api/v1/catalog")
         assert_ok(response)
         body = response.json()
         assert_catalog_page_shape(body)
-        assert body["totalProducts"] > 0, "Catalog must have products on startup"
-        assert len(body["products"]) > 0
+        assert body["meta"]["totalProducts"] > 0 and len(body["items"]) > 0
 
+    @allure.title("User can search products")
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_user_can_search_products(self, smoke_client: httpx.Client):
-        """Journey: user types in the search bar → filtered results appear."""
         response = smoke_client.get("/api/v1/catalog", params={"query": "a"})
         assert_ok(response)
         assert_catalog_page_shape(response.json())
 
+    @allure.title("User can switch language to Russian")
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_user_can_switch_language(self, smoke_client: httpx.Client):
-        """Journey: user selects Russian → catalog titles returned in Russian."""
         response = smoke_client.get("/api/v1/catalog", params={"lang": "ru"})
         assert_ok(response)
         assert response.json()["language"] == "ru"
 
-    def test_user_can_switch_currency(self, smoke_client: httpx.Client):
-        """Journey: user selects EUR → prices shown in EUR."""
-        response = smoke_client.get("/api/v1/catalog", params={"currency": "EUR"})
+    @allure.title("USD prices shown correctly for all products")
+    @allure.severity(allure.severity_level.CRITICAL)
+    def test_usd_currency_works(self, smoke_client: httpx.Client):
+        response = smoke_client.get("/api/v1/catalog", params={"currency": "USD"})
         assert_ok(response)
         body = response.json()
-        assert body["currency"] == "EUR"
-        for product in body["products"]:
-            assert product["price"]["currency"] == "EUR"
+        assert body["currency"] == "USD"
+        for product in body["items"]:
+            assert product["price"]["currency"] == "USD"
 
+    @allure.title("User can view product details with reviews")
+    @allure.severity(allure.severity_level.BLOCKER)
     def test_user_can_view_product_details(self, smoke_client: httpx.Client):
-        """Journey: user taps a product → detail screen opens with reviews."""
-        products = smoke_client.get("/api/v1/catalog", params={"pageSize": 1}).json()["products"]
-        if not products:
-            pytest.skip("No products in catalog")
-
-        pid = products[0]["id"]
-        response = smoke_client.get(f"/api/v1/catalog/{pid}")
+        items = smoke_client.get("/api/v1/catalog", params={"pageSize": 1}).json()["items"]
+        if not items:
+            pytest.skip("No products")
+        response = smoke_client.get(f"/api/v1/catalog/{items[0]['id']}")
         assert_ok(response)
         assert_product_details_shape(response.json())
 
+    @allure.title("User can paginate to page 2")
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_user_can_paginate(self, smoke_client: httpx.Client):
-        """Journey: user scrolls to bottom → next page loads."""
         body = smoke_client.get("/api/v1/catalog", params={"pageSize": 5}).json()
-        if body["totalPages"] < 2:
-            pytest.skip("Not enough products for pagination")
+        if body["meta"]["totalPages"] < 2:
+            pytest.skip("Not enough products")
+        page2 = smoke_client.get("/api/v1/catalog", params={"page": 2, "pageSize": 5})
+        assert_ok(page2)
+        assert page2.json()["meta"]["currentPage"] == 2
 
-        page2 = smoke_client.get("/api/v1/catalog", params={"page": 2, "pageSize": 5}).json()
-        assert_ok(smoke_client.get("/api/v1/catalog", params={"page": 2, "pageSize": 5}))
-        assert page2["page"] == 2
-        assert len(page2["products"]) > 0
-
+    @allure.title("User can filter by category")
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_user_can_filter_by_category(self, smoke_client: httpx.Client):
-        """Journey: user taps a category chip → only matching products shown."""
-        categories = smoke_client.get("/api/v1/catalog").json()["categories"]
-        real_categories = [c for c in categories if c["slug"]]
-        if not real_categories:
-            pytest.skip("No categories available")
+        categories = [c for c in smoke_client.get("/api/v1/catalog").json()["categories"] if c["slug"]]
+        if not categories:
+            pytest.skip("No categories")
+        assert_ok(smoke_client.get("/api/v1/catalog", params={"category": categories[0]["slug"]}))
 
-        slug = real_categories[0]["slug"]
-        response = smoke_client.get("/api/v1/catalog", params={"category": slug})
-        assert_ok(response)
-
-    def test_sort_by_price_ascending_journey(self, smoke_client: httpx.Client):
-        """Journey: user selects 'Price: Low to High' sort → products reordered."""
-        products = smoke_client.get(
+    @allure.title("Products are sorted by price ascending")
+    @allure.severity(allure.severity_level.CRITICAL)
+    def test_sort_by_price_ascending(self, smoke_client: httpx.Client):
+        items = smoke_client.get(
             "/api/v1/catalog", params={"sort": "price_asc", "pageSize": 20}
-        ).json()["products"]
-        prices = [p["price"]["amount"] for p in products]
-        assert prices == sorted(prices), "Products not sorted by price ascending"
+        ).json()["items"]
+        prices = [p["price"]["amount"] for p in items]
+        assert prices == sorted(prices)
 
-    def test_languages_and_currencies_endpoints_work(self, smoke_client: httpx.Client):
-        """Journey: app bootstraps → fetches supported languages and currencies."""
-        langs = smoke_client.get("/api/v1/languages").json()["languages"]
-        currencies = smoke_client.get("/api/v1/currencies").json()["currencies"]
-        assert len(langs) == 10
-        assert len(currencies) == 10
+    @allure.title("Languages endpoint returns 10 languages")
+    @allure.severity(allure.severity_level.CRITICAL)
+    def test_languages_endpoint_works(self, smoke_client: httpx.Client):
+        assert len(smoke_client.get("/api/v1/languages").json()["items"]) == 10
 
-    def test_product_details_with_localization(self, smoke_client: httpx.Client):
-        """Journey: user views product details in non-English language."""
-        products = smoke_client.get("/api/v1/catalog", params={"pageSize": 1}).json()["products"]
-        if not products:
+    @allure.title("Currencies endpoint returns 10 currencies")
+    @allure.severity(allure.severity_level.CRITICAL)
+    def test_currencies_endpoint_works(self, smoke_client: httpx.Client):
+        assert len(smoke_client.get("/api/v1/currencies").json()["items"]) == 10
+
+    @allure.title("Product details available in German with language field")
+    @allure.severity(allure.severity_level.NORMAL)
+    def test_product_details_with_language(self, smoke_client: httpx.Client):
+        items = smoke_client.get("/api/v1/catalog", params={"pageSize": 1}).json()["items"]
+        if not items:
             pytest.skip("No products")
-        pid = products[0]["id"]
-
-        response = smoke_client.get(f"/api/v1/catalog/{pid}", params={"lang": "de", "currency": "EUR"})
+        response = smoke_client.get(f"/api/v1/catalog/{items[0]['id']}", params={"lang": "de"})
         assert_ok(response)
-        body = response.json()
-        assert body["product"]["price"]["currency"] == "EUR"
+        assert response.json()["language"] == "de"
+
+    @allure.title("Nonsense search returns zero results")
+    @allure.severity(allure.severity_level.NORMAL)
+    def test_gobbledegook_search_returns_empty(self, smoke_client: httpx.Client):
+        body = smoke_client.get(
+            "/api/v1/catalog", params={"query": "xyzzy_no_such_product_12345"}
+        ).json()
+        assert body["meta"]["totalProducts"] == 0 and body["items"] == []

@@ -22,5 +22,8 @@ factory-boy>=3.3.0
 pydantic>=2.6.0
 jsonschema>=4.21.0
 
+# Allure reporting
+allure-pytest>=2.13.5
+
 # Utilities
 python-dotenv>=1.0.0

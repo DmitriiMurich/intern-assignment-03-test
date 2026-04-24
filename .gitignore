@@ -18,3 +18,24 @@ backend/node_modules/
 backend/dist/
 backend/.env
 .env
+
+settings.local.json
+
+# Claude Code
+.claude/settings.local.json
+C:\Users\Dmitrii\AppData\Local\Temp\claude\
+
+# Test artifacts
+tests/allure-results/
+tests/allure-report/
+tests/pipeline/project-analysis.json
+tests/pipeline/test-results.json
+tests/pipeline/run-status.json
+tests/pipeline/coverage-report.json
+.pytest_cache/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.coverage
+coverage.json
