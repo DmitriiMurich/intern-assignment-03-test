@@ -33,6 +33,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
@@ -190,7 +192,8 @@ internal fun ProductCatalogContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
-                    .padding(16.dp),
+                    .padding(16.dp)
+                    .semantics { testTag = "loading_indicator" },
             ) {
                 CircularProgressIndicator()
             }
@@ -199,7 +202,8 @@ internal fun ProductCatalogContent(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding(),
+                    .statusBarsPadding()
+                    .semantics { testTag = "products_list" },
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     top = 16.dp,
@@ -235,6 +239,7 @@ internal fun ProductCatalogContent(
                                 subtitle = resolveErrorMessage(errorMessage = state.errorMessage),
                                 actionLabel = stringResource(Res.string.retry),
                                 onAction = onRetry,
+                                cardTestTag = "error_card",
                             )
                         }
                     }
@@ -255,6 +260,7 @@ internal fun ProductCatalogContent(
                                     null
                                 },
                                 onAction = if (hasActiveFilters) onResetFilters else null,
+                                cardTestTag = "empty_state_card",
                             )
                         }
                     }
@@ -276,7 +282,9 @@ internal fun ProductCatalogContent(
                             ProductCard(
                                 product = product,
                                 onClick = { onProductSelected(product.id) },
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .semantics { testTag = "product_card" },
                             )
                         }
                         if (state.isLoadingMore) {

@@ -1,0 +1,577 @@
+Starting a Gradle Daemon, 4 stopped Daemons could not be reused, use --status for details
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :feature:androidPreBuild UP-TO-DATE
+> Task :feature:preAndroidMainBuild UP-TO-DATE
+> Task :feature:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :model:androidPreBuild UP-TO-DATE
+> Task :model:preAndroidMainBuild UP-TO-DATE
+> Task :model:generateAndroidMainEmptyResourceFiles UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:generateDebugRFile UP-TO-DATE
+> Task :feature:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :feature:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :feature:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :feature:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :feature:convertXmlValueResourcesForCommonMain UP-TO-DATE
+> Task :feature:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :feature:prepareComposeResourcesTaskForCommonMain UP-TO-DATE
+> Task :feature:generateResourceAccessorsForCommonMain UP-TO-DATE
+> Task :feature:generateActualResourceCollectorsForAndroidMain UP-TO-DATE
+> Task :feature:generateComposeResClass UP-TO-DATE
+> Task :feature:generateExpectResourceCollectorsForCommonMain UP-TO-DATE
+> Task :model:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :model:compileAndroidMain UP-TO-DATE
+> Task :model:bundleAndroidMainClassesToCompileJar UP-TO-DATE
+> Task :feature:compileAndroidMain UP-TO-DATE
+> Task :feature:bundleAndroidMainClassesToCompileJar UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :feature:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :model:writeAndroidMainAarMetadata UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :feature:processAndroidMainManifest UP-TO-DATE
+> Task :model:processAndroidMainManifest UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:bundleDebugClassesToCompileJar UP-TO-DATE
+> Task :app:preDebugAndroidTestBuild SKIPPED
+> Task :app:processDebugAndroidTestManifest UP-TO-DATE
+> Task :app:generateDebugAndroidTestBuildConfig UP-TO-DATE
+> Task :app:generateDebugAndroidTestResources UP-TO-DATE
+> Task :app:packageDebugAndroidTestResources UP-TO-DATE
+> Task :app:processDebugAndroidTestNavigationResources UP-TO-DATE
+> Task :app:parseDebugAndroidTestLocalResources UP-TO-DATE
+> Task :app:generateDebugAndroidTestRFile UP-TO-DATE
+> Task :app:compileDebugAndroidTestKotlin UP-TO-DATE
+> Task :app:javaPreCompileDebugAndroidTest UP-TO-DATE
+> Task :app:compileDebugAndroidTestJavaWithJavac UP-TO-DATE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :feature:assembleAndroidMainResources UP-TO-DATE
+> Task :feature:processAndroidMainJavaRes UP-TO-DATE
+> Task :model:processAndroidMainJavaRes UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :feature:bundleLibRuntimeToDirAndroidMain UP-TO-DATE
+> Task :model:bundleLibRuntimeToDirAndroidMain UP-TO-DATE
+> Task :app:dexBuilderDebug UP-TO-DATE
+> Task :app:mergeProjectDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :feature:mergeAndroidMainJniLibFolders UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :feature:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :feature:copyAndroidMainJniLibsProjectOnly UP-TO-DATE
+> Task :model:mergeAndroidMainJniLibFolders UP-TO-DATE
+> Task :model:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :model:copyAndroidMainJniLibsProjectOnly UP-TO-DATE
+> Task :app:mergeDebugNativeLibs UP-TO-DATE
+> Task :app:stripDebugDebugSymbols UP-TO-DATE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:packageDebug UP-TO-DATE
+> Task :app:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :app:generateDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeDebugAndroidTestAssets UP-TO-DATE
+> Task :app:compressDebugAndroidTestAssets UP-TO-DATE
+> Task :app:processDebugAndroidTestJavaRes UP-TO-DATE
+> Task :app:mergeDebugAndroidTestJavaResource UP-TO-DATE
+> Task :app:checkDebugAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugAndroidTestFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexDebugAndroidTest UP-TO-DATE
+> Task :app:mergeLibDexDebugAndroidTest UP-TO-DATE
+> Task :app:checkDebugAndroidTestAarMetadata UP-TO-DATE
+> Task :app:mapDebugAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:compileDebugAndroidTestNavigationResources UP-TO-DATE
+> Task :app:mergeDebugAndroidTestResources UP-TO-DATE
+> Task :app:processDebugAndroidTestResources UP-TO-DATE
+> Task :app:dexBuilderDebugAndroidTest UP-TO-DATE
+> Task :app:mergeProjectDexDebugAndroidTest UP-TO-DATE
+> Task :app:mergeDebugAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebugAndroidTest UP-TO-DATE
+> Task :app:writeDebugAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:packageDebugAndroidTest UP-TO-DATE
+> Task :app:createDebugAndroidTestApkListingFileRedirect UP-TO-DATE
+Starting 23 tests on fast_avd(AVD) - 10
+fast_avd(AVD) - 10 Tests 0/23 completed. (0 skipped) (0 failed)
+> Task :app:connectedDebugAndroidTest
+
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest > searchWithWhitespaceOnly_showsAllProducts[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 1/23 completed. (0 skipped) (1 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest > searchWithDigitsOnly_noUnhandledError[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 2/23 completed. (0 skipped) (2 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest > searchNoMatch_resetFilters_restoresCatalog[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 3/23 completed. (0 skipped) (3 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest > searchWithSpecialCharsOnly_noCrash[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 4/23 completed. (0 skipped) (4 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest > searchWithVeryLongString_noCrash[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 5/23 completed. (0 skipped) (5 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest > searchWithNoMatch_showsEmptyStateCard[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 6/23 completed. (0 skipped) (6 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > backButton_returnsToProductCatalog[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 7/23 completed. (0 skipped) (7 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > searchByValidQuery_updatesProductList[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 8/23 completed. (0 skipped) (8 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > appLaunch_showsCatalogWithProducts[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 9/23 completed. (0 skipped) (9 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > searchField_acceptsSingleCharacter[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 10/23 completed. (0 skipped) (10 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > clearSearch_restoresFullCatalog[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 11/23 completed. (0 skipped) (11 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > languageDropdown_selectRussian_updatesLanguage[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 12/23 completed. (0 skipped) (12 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > clickProductCard_opensDetailsScreen[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 13/23 completed. (0 skipped) (13 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > currencyDropdown_isDisplayedAndClickable[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 14/23 completed. (0 skipped) (14 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > productsListContainer_isDisplayed[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 15/23 completed. (0 skipped) (15 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > languageDropdown_isDisplayedAndClickable[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 16/23 completed. (0 skipped) (16 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > sortDropdown_showsOptionsOnClick[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 17/23 completed. (0 skipped) (17 failed)
+
+com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest > sortDropdown_isDisplayed[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 18/23 completed. (0 skipped) (18 failed)
+
+com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest > openTwoDifferentProducts_bothShowDetails[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 19/23 completed. (0 skipped) (19 failed)
+
+com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest > clickProduct_detailsScreenOpens[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 20/23 completed. (0 skipped) (20 failed)
+
+com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest > detailsScreen_backButton_restoresCatalog[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 21/23 completed. (0 skipped) (21 failed)
+
+com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest > clickSecondProduct_detailsScreenOpens[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+fast_avd(AVD) - 10 Tests 22/23 completed. (0 skipped) (22 failed)
+
+com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest > afterBackNavigation_productCountUnchanged[fast_avd(AVD) - 10] [31mFAILED [0m
+	androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+Tests on fast_avd(AVD) - 10 failed: There was 23 failure(s).
+Finished 23 tests on fast_avd(AVD) - 10
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithWhitespaceOnly_showsAllProducts: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithWhitespaceOnly_showsAllProducts(CatalogScreenNegativeTest.kt:128)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithWhitespaceOnly_showsAllProducts(CatalogScreenNegativeTest.kt:128)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithDigitsOnly_noUnhandledError: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithDigitsOnly_noUnhandledError(CatalogScreenNegativeTest.kt:146)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithDigitsOnly_noUnhandledError(CatalogScreenNegativeTest.kt:146)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchNoMatch_resetFilters_restoresCatalog: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchNoMatch_resetFilters_restoresCatalog(CatalogScreenNegativeTest.kt:61)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchNoMatch_resetFilters_restoresCatalog(CatalogScreenNegativeTest.kt:61)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithSpecialCharsOnly_noCrash: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithSpecialCharsOnly_noCrash(CatalogScreenNegativeTest.kt:89)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithSpecialCharsOnly_noCrash(CatalogScreenNegativeTest.kt:89)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithVeryLongString_noCrash: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithVeryLongString_noCrash(CatalogScreenNegativeTest.kt:105)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithVeryLongString_noCrash(CatalogScreenNegativeTest.kt:105)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithNoMatch_showsEmptyStateCard: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithNoMatch_showsEmptyStateCard(CatalogScreenNegativeTest.kt:46)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts(CatalogScreenNegativeTest.kt:158)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.waitForProducts$default(CatalogScreenNegativeTest.kt:157)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenNegativeTest.searchWithNoMatch_showsEmptyStateCard(CatalogScreenNegativeTest.kt:46)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.backButton_returnsToProductCatalog: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.backButton_returnsToProductCatalog(CatalogScreenPositiveTest.kt:99)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.backButton_returnsToProductCatalog(CatalogScreenPositiveTest.kt:99)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.searchByValidQuery_updatesProductList: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.searchByValidQuery_updatesProductList(CatalogScreenPositiveTest.kt:71)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.searchByValidQuery_updatesProductList(CatalogScreenPositiveTest.kt:71)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.appLaunch_showsCatalogWithProducts: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.appLaunch_showsCatalogWithProducts(CatalogScreenPositiveTest.kt:45)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.appLaunch_showsCatalogWithProducts(CatalogScreenPositiveTest.kt:45)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.searchField_acceptsSingleCharacter: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.searchField_acceptsSingleCharacter(CatalogScreenPositiveTest.kt:154)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.searchField_acceptsSingleCharacter(CatalogScreenPositiveTest.kt:154)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.clearSearch_restoresFullCatalog: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.clearSearch_restoresFullCatalog(CatalogScreenPositiveTest.kt:201)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.clearSearch_restoresFullCatalog(CatalogScreenPositiveTest.kt:201)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.languageDropdown_selectRussian_updatesLanguage: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.languageDropdown_selectRussian_updatesLanguage(CatalogScreenPositiveTest.kt:166)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.languageDropdown_selectRussian_updatesLanguage(CatalogScreenPositiveTest.kt:166)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.clickProductCard_opensDetailsScreen: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.clickProductCard_opensDetailsScreen(CatalogScreenPositiveTest.kt:85)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.clickProductCard_opensDetailsScreen(CatalogScreenPositiveTest.kt:85)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.currencyDropdown_isDisplayedAndClickable: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.currencyDropdown_isDisplayedAndClickable(CatalogScreenPositiveTest.kt:130)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.currencyDropdown_isDisplayedAndClickable(CatalogScreenPositiveTest.kt:130)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.productsListContainer_isDisplayed: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.productsListContainer_isDisplayed(CatalogScreenPositiveTest.kt:59)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.productsListContainer_isDisplayed(CatalogScreenPositiveTest.kt:59)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.languageDropdown_isDisplayedAndClickable: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.languageDropdown_isDisplayedAndClickable(CatalogScreenPositiveTest.kt:117)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.languageDropdown_isDisplayedAndClickable(CatalogScreenPositiveTest.kt:117)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.sortDropdown_showsOptionsOnClick: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.sortDropdown_showsOptionsOnClick(CatalogScreenPositiveTest.kt:186)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.sortDropdown_showsOptionsOnClick(CatalogScreenPositiveTest.kt:186)
+Execute com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.sortDropdown_isDisplayed: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.sortDropdown_isDisplayed(CatalogScreenPositiveTest.kt:142)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts(CatalogScreenPositiveTest.kt:219)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.waitForProducts$default(CatalogScreenPositiveTest.kt:218)
+at com.artem.korenyakin.internassignment03.ui.CatalogScreenPositiveTest.sortDropdown_isDisplayed(CatalogScreenPositiveTest.kt:142)
+Execute com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.openTwoDifferentProducts_bothShowDetails: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.openTwoDifferentProducts_bothShowDetails(ProductDetailsUiTest.kt:93)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.openTwoDifferentProducts_bothShowDetails(ProductDetailsUiTest.kt:93)
+Execute com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.clickProduct_detailsScreenOpens: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.clickProduct_detailsScreenOpens(ProductDetailsUiTest.kt:41)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.clickProduct_detailsScreenOpens(ProductDetailsUiTest.kt:41)
+Execute com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.detailsScreen_backButton_restoresCatalog: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.detailsScreen_backButton_restoresCatalog(ProductDetailsUiTest.kt:57)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.detailsScreen_backButton_restoresCatalog(ProductDetailsUiTest.kt:57)
+Execute com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.clickSecondProduct_detailsScreenOpens: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.clickSecondProduct_detailsScreenOpens(ProductDetailsUiTest.kt:76)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.clickSecondProduct_detailsScreenOpens(ProductDetailsUiTest.kt:76)
+Execute com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.afterBackNavigation_productCountUnchanged: FAILED
+androidx.compose.ui.test.ComposeTimeoutException: androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.afterBackNavigation_productCountUnchanged(ProductDetailsUiTest.kt:123)
+
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 30000 ms
+at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:809)
+at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:378)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts(ProductDetailsUiTest.kt:144)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.waitForProducts$default(ProductDetailsUiTest.kt:143)
+at com.artem.korenyakin.internassignment03.ui.ProductDetailsUiTest.afterBackNavigation_productCountUnchanged(ProductDetailsUiTest.kt:123)
+
+> Task :app:connectedDebugAndroidTest FAILED
+
+[Incubating] Problems report is available at: file:///C:/Users/Dmitrii/projects/intern-assignment-03-test/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:connectedDebugAndroidTest'.
+> There were failing tests. See the report at: file:///C:/Users/Dmitrii/projects/intern-assignment-03-test/app/build/reports/androidTests/connected/debug/index.html
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 13m 30s
+94 actionable tasks: 1 executed, 93 up-to-date

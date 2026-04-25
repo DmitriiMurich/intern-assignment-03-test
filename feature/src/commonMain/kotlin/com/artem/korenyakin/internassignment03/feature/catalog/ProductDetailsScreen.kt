@@ -23,6 +23,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
@@ -246,7 +248,9 @@ private fun BackNavigationButton(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
         ),
-        modifier = Modifier.clickable(onClick = onBack),
+        modifier = Modifier
+            .clickable(onClick = onBack)
+            .semantics { testTag = "back_button" },
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),

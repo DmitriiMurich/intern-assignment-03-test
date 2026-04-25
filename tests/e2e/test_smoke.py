@@ -13,7 +13,7 @@ from tests.helpers.assertions import (
 
 @allure.feature("End-to-End")
 @allure.story("Critical User Journeys")
-@pytest.mark.ui
+@pytest.mark.e2e
 @pytest.mark.smoke
 class TestCriticalUserJourneys:
 

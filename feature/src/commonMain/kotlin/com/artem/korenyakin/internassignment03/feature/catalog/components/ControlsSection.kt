@@ -25,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -79,7 +81,7 @@ internal fun ControlsSection(
                 label = stringResource(Res.string.search_label),
                 placeholder = stringResource(Res.string.search_placeholder),
                 onQueryChanged = onSearchQueryChanged,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().semantics { testTag = "search_field" },
             )
             CatalogDropdown(
                 title = stringResource(Res.string.language),
@@ -88,6 +90,7 @@ internal fun ControlsSection(
                 indicatorText = stringResource(Res.string.dropdown_indicator),
                 onSelected = onLanguageSelected,
                 onExpanded = { focusManager.clearFocus() },
+                testTag = "language_dropdown",
             )
             CatalogDropdown(
                 title = stringResource(Res.string.currency),
@@ -96,6 +99,7 @@ internal fun ControlsSection(
                 indicatorText = stringResource(Res.string.dropdown_indicator),
                 onSelected = onCurrencySelected,
                 onExpanded = { focusManager.clearFocus() },
+                testTag = "currency_dropdown",
             )
             CategoryChipsSection(
                 categories = state.categories,
@@ -112,6 +116,7 @@ internal fun ControlsSection(
                 indicatorText = stringResource(Res.string.dropdown_indicator),
                 onSelected = onSortOptionSelected,
                 onExpanded = { focusManager.clearFocus() },
+                testTag = "sort_dropdown",
             )
         }
     }
@@ -217,12 +222,14 @@ private fun <T> CatalogDropdown(
     indicatorText: String,
     onSelected: (T) -> Unit,
     onExpanded: () -> Unit,
+    testTag: String = "",
 ) {
     var expanded by remember {
         mutableStateOf(false)
     }
 
     Column(
+        modifier = if (testTag.isNotEmpty()) Modifier.semantics { this.testTag = testTag } else Modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(

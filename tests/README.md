@@ -31,7 +31,7 @@ tests/
 │   ├── test_catalog.py          # GET /api/v1/catalog — поиск, фильтры, сортировка, пагинация
 │   └── test_product_details.py  # GET /api/v1/catalog/:id
 │
-├── ui/                          # Smoke-тесты — критические пользовательские сценарии
+├── e2e/                         # Backend E2E/smoke-тесты — критические пользовательские сценарии
 │   ├── conftest.py              # smoke_client fixture
 │   └── test_smoke.py            # 13 user journeys из testing-spec.md
 │
@@ -84,6 +84,7 @@ python -m pytest tests/ -m "api and not boundary"  # API без BVA
 | `/run-tests` | Запускает тесты, считает покрытие и quality score |
 | `/run-project-and-tests` | Стартует Docker + бэкенд, затем запускает полный сьют |
 | `/allure-report` | Генерирует Allure-отчёт и открывает на `http://127.0.0.1:4040` |
+| `/android-tests` | Запускает KMP unit-тесты, конвертирует в Allure, открывает совмещённый отчёт |
 
 ---
 
@@ -93,7 +94,8 @@ python -m pytest tests/ -m "api and not boundary"  # API без BVA
 |------|--------|-------------|-----------------|
 | Unit | `@pytest.mark.unit` | Нет (respx mock) | Всегда, включая CI без сервера |
 | API | `@pytest.mark.api` | Живой бэкенд на :8080 | После запуска `docker compose up` |
-| Smoke/UI | `@pytest.mark.ui` | Живой бэкенд на :8080 | Перед релизом |
+| Backend E2E | `@pytest.mark.e2e` | Живой бэкенд на :8080 | Перед релизом |
+| Android/KMP | `/android-tests` | Java 8+ (JVM, без устройства) | Через `/android-tests` |
 
 ---
 
@@ -116,6 +118,25 @@ python -m pytest tests/ -m "api and not boundary"  # API без BVA
 | `CRITICAL` | Неверный код языка → 400, сортировка работает, пагинация консистентна |
 | `NORMAL` | Дубликаты кодов, isSourceLanguage флаг, meta.query эхо |
 | `MINOR` | isSourceCurrency флаг, negative product ID |
+
+---
+
+## Android / KMP тесты
+
+Kotlin unit-тесты находятся в `feature/src/commonTest/kotlin/` (5 тест-классов):
+- `CatalogStringsTest` — локализация строк
+- `ProductCatalogViewModelTest` — ViewModel логика
+- `SearchProductsUseCaseTest` — бизнес-логика поиска
+- `CatalogBackendMapperTest` — маппинг ответа API в модели
+- `CatalogBackendRepositoryTest` — репозиторий с Ktor mock
+
+```bash
+# Запустить JVM unit-тесты (Java 8+ required, устройство не нужно)
+./gradlew :feature:jvmTest
+
+# Через агент с Allure-отчётом:
+# /android-tests
+```
 
 ---
 

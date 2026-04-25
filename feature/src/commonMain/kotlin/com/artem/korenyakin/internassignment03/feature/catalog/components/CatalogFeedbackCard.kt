@@ -16,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -27,9 +29,12 @@ internal fun CatalogFeedbackCard(
     subtitle: String? = null,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
+    cardTestTag: String = "",
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().let { m ->
+            if (cardTestTag.isNotEmpty()) m.semantics { testTag = cardTestTag } else m
+        },
         shape = RoundedCornerShape(30.dp),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp,

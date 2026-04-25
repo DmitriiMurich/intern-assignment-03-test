@@ -1,8 +1,9 @@
 """
-UI / smoke test conftest.
+Backend E2E / smoke test conftest.
 
-These tests verify the full user-visible stack: backend + database together.
-They are the coarsest-grained layer (ISTQB: system testing / E2E).
+These tests verify the full backend stack (HTTP API + database) end-to-end.
+They are NOT Android UI tests — for Android UI tests see .claude/agents/android-tests.md.
+ISTQB: system testing of the server-side component.
 """
 from __future__ import annotations
 
