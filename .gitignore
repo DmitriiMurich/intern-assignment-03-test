@@ -52,8 +52,8 @@ tests/pipeline/test-results.json
 tests/pipeline/run-status.json
 tests/pipeline/coverage-report.json
 
-# Logs from test runs
-tests/pipeline/*.log
+# Logs
+*.log
 tests/pipeline/*.txt
 
 # Pytest cache and coverage
