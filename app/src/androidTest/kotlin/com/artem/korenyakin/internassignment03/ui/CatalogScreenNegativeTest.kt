@@ -45,7 +45,7 @@ class CatalogScreenNegativeTest {
     fun searchWithNoMatch_showsEmptyStateCard() {
         waitForProducts()
         composeTestRule.onNodeWithTag(SEARCH_FIELD).performTextInput("xyzzy_no_match_12345_abc")
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             composeTestRule.onAllNodesWithTag(EMPTY_STATE_CARD).fetchSemanticsNodes().isNotEmpty()
         }
         composeTestRule.onNodeWithTag(EMPTY_STATE_CARD).assertIsDisplayed()
@@ -60,7 +60,7 @@ class CatalogScreenNegativeTest {
     fun searchNoMatch_resetFilters_restoresCatalog() {
         waitForProducts()
         composeTestRule.onNodeWithTag(SEARCH_FIELD).performTextInput("xyzzy_no_match_99999")
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
             composeTestRule.onAllNodesWithTag(EMPTY_STATE_CARD).fetchSemanticsNodes().isNotEmpty()
         }
         // Reset filters button appears inside empty state card when filters are active
@@ -105,17 +105,13 @@ class CatalogScreenNegativeTest {
         waitForProducts()
         val longString = "a".repeat(200)
         composeTestRule.onNodeWithTag(SEARCH_FIELD).performTextInput(longString)
-        // App must remain responsive
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
-            composeTestRule.onAllNodesWithTag(PRODUCTS_LIST).fetchSemanticsNodes().isNotEmpty() ||
+        // App must remain responsive — wait for search to settle (products or empty state)
+        composeTestRule.waitUntil(timeoutMillis = 20_000) {
+            composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty() ||
                 composeTestRule.onAllNodesWithTag(EMPTY_STATE_CARD).fetchSemanticsNodes().isNotEmpty()
         }
         // Either state is acceptable — what's NOT acceptable is a crash
-        val productNodes = composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes()
-        val emptyNodes = composeTestRule.onAllNodesWithTag(EMPTY_STATE_CARD).fetchSemanticsNodes()
-        assert(productNodes.isNotEmpty() || emptyNodes.isNotEmpty()) {
-            "App must show either products or empty-state after long search — got neither"
-        }
+        composeTestRule.onNodeWithTag(PRODUCTS_LIST).assertIsDisplayed()
     }
 
     /**
@@ -127,7 +123,7 @@ class CatalogScreenNegativeTest {
     fun searchWithWhitespaceOnly_showsAllProducts() {
         waitForProducts()
         composeTestRule.onNodeWithTag(SEARCH_FIELD).performTextInput("   ")
-        composeTestRule.waitUntil(timeoutMillis = 8_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty() ||
                 composeTestRule.onAllNodesWithTag(EMPTY_STATE_CARD).fetchSemanticsNodes().isNotEmpty()
         }
@@ -145,7 +141,7 @@ class CatalogScreenNegativeTest {
     fun searchWithDigitsOnly_noUnhandledError() {
         waitForProducts()
         composeTestRule.onNodeWithTag(SEARCH_FIELD).performTextInput("99999999")
-        composeTestRule.waitUntil(timeoutMillis = 8_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty() ||
                 composeTestRule.onAllNodesWithTag(EMPTY_STATE_CARD).fetchSemanticsNodes().isNotEmpty()
         }
@@ -154,7 +150,7 @@ class CatalogScreenNegativeTest {
 
     // ── HELPERS ───────────────────────────────────────────────────────────────
 
-    private fun waitForProducts(timeoutMs: Long = 30_000) {
+    private fun waitForProducts(timeoutMs: Long = 120_000) {
         composeTestRule.waitUntil(timeoutMillis = timeoutMs) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty()
         }

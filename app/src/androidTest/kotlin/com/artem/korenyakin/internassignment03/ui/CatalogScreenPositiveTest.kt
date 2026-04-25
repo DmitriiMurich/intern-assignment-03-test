@@ -13,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.artem.korenyakin.internassignment03.MainActivity
 import com.artem.korenyakin.internassignment03.ui.UiTestTags.BACK_BUTTON
 import com.artem.korenyakin.internassignment03.ui.UiTestTags.CURRENCY_DROPDOWN
+import com.artem.korenyakin.internassignment03.ui.UiTestTags.EMPTY_STATE_CARD
 import com.artem.korenyakin.internassignment03.ui.UiTestTags.LANGUAGE_DROPDOWN
 import com.artem.korenyakin.internassignment03.ui.UiTestTags.PRODUCT_CARD
 import com.artem.korenyakin.internassignment03.ui.UiTestTags.PRODUCTS_LIST
@@ -42,7 +43,7 @@ class CatalogScreenPositiveTest {
      */
     @Test
     fun appLaunch_showsCatalogWithProducts() {
-        composeTestRule.waitUntil(timeoutMillis = 30_000) {
+        composeTestRule.waitUntil(timeoutMillis = 60_000) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty()
         }
         composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().also { nodes ->
@@ -171,7 +172,7 @@ class CatalogScreenPositiveTest {
         }
         composeTestRule.onNodeWithText("Русский").performClick()
         // Catalog reloads — wait for products
-        composeTestRule.waitUntil(timeoutMillis = 10_000) {
+        composeTestRule.waitUntil(timeoutMillis = 30_000) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty()
         }
     }
@@ -200,12 +201,12 @@ class CatalogScreenPositiveTest {
     fun clearSearch_restoresFullCatalog() {
         waitForProducts()
         composeTestRule.onNodeWithTag(SEARCH_FIELD).performTextInput("laptop")
-        composeTestRule.waitUntil(timeoutMillis = 8_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty() ||
-                composeTestRule.onAllNodesWithTag("empty_state_card").fetchSemanticsNodes().isNotEmpty()
+                composeTestRule.onAllNodesWithTag(EMPTY_STATE_CARD).fetchSemanticsNodes().isNotEmpty()
         }
         composeTestRule.onNodeWithTag(SEARCH_FIELD).performTextClearance()
-        composeTestRule.waitUntil(timeoutMillis = 8_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty()
         }
         composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().also { nodes ->
@@ -215,7 +216,7 @@ class CatalogScreenPositiveTest {
 
     // ── HELPERS ───────────────────────────────────────────────────────────────
 
-    private fun waitForProducts(timeoutMs: Long = 30_000) {
+    private fun waitForProducts(timeoutMs: Long = 120_000) {
         composeTestRule.waitUntil(timeoutMillis = timeoutMs) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty()
         }

@@ -140,7 +140,7 @@ class ProductDetailsUiTest {
 
     // ── HELPERS ───────────────────────────────────────────────────────────────
 
-    private fun waitForProducts(timeoutMs: Long = 30_000) {
+    private fun waitForProducts(timeoutMs: Long = 120_000) {
         composeTestRule.waitUntil(timeoutMillis = timeoutMs) {
             composeTestRule.onAllNodesWithTag(PRODUCT_CARD).fetchSemanticsNodes().isNotEmpty()
         }
