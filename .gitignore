@@ -25,16 +25,38 @@ settings.local.json
 .claude/settings.local.json
 C:\Users\Dmitrii\AppData\Local\Temp\claude\
 
-# Screenshots from emulator
-tests/screenshots/
+# Screenshots — numbered test-run captures are ignored; A/B/C/D key ones are force-tracked
+tests/screenshots/[0-9]*.png
+tests/screenshots/s*.png
 
-# Test artifacts
+# ── Test artifacts — generated, do not commit ─────────────────────────────────
+
+# Allure results directories (generated per run)
 tests/allure-results/
+tests/allure-results-fresh/
+tests/allure-results-all/
+tests/allure-results-android/
+tests/allure-results-kmp/
+
+# Allure HTML reports (generated, serve locally)
 tests/allure-report/
+tests/allure-report-full/
+
+# Generated HTML and PDF reports
+tests/coverage-report.html
+tests/test-report.pdf
+
+# Pipeline communication files (agent inter-process)
 tests/pipeline/project-analysis.json
 tests/pipeline/test-results.json
 tests/pipeline/run-status.json
 tests/pipeline/coverage-report.json
+
+# Logs from test runs
+tests/pipeline/*.log
+tests/pipeline/*.txt
+
+# Pytest cache and coverage
 .pytest_cache/
 __pycache__/
 **/__pycache__/
@@ -42,3 +64,17 @@ __pycache__/
 *.pyo
 .coverage
 coverage.json
+.coverage.*
+htmlcov/
+
+# Temp screenshot files (non-committed captures)
+tests/screenshots/tmp_*.png
+tests/screenshots/check*.png
+tests/screenshots/s_*.png
+tests/screenshots/s0*.png
+
+# Android / Gradle
+*.hprof
+*.orig
+.navigation/
+lint/
